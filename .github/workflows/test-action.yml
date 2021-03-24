@@ -1,17 +1,12 @@
-name: Test the Cosign Action!
-# This uses the cosign action here in the repo at head (using the checkout action and a relative path).
-# The version of cosign in the action itself is pinned to the last major release, not HEAD.
-# This is mainly to detect whether or not we break the action.yml
+name: test-cosign
 on: [pull_request]
 
 jobs:
   test_cosign_action:
     runs-on: ubuntu-latest
-    name: A job to test that our action definition works at HEAD.
+    name: Install Cosign and test presence in path
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
       - name: Install Cosign
-        uses: mbestavros/cosign-installer@main
+        uses: sigstore/cosign-installer@main
       - name: Check install!
         run: cosign version
