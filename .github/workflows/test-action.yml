@@ -10,3 +10,25 @@ jobs:
         uses: sigstore/cosign-installer@main
       - name: Check install!
         run: cosign version
+
+  test_cosign_action_custom:
+    runs-on: ubuntu-latest
+    name: Install Custom Cosign and test presence in path
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v0.1.0'
+      - name: Check install!
+        run: cosign version
+
+
+  test_cosign_action_wrong:
+    runs-on: ubuntu-latest
+    name: Try to install a wrong Cosign
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'honk'
+        continue-on-error: true
