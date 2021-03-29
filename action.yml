@@ -4,6 +4,11 @@ description: 'Install Cosign and put it on your path'
 # This is pinned to the last major release, we have to bump it for each action version.
 # TODO: We should version the action separately from the binary, and add a paramter for which cosign
 # version to install.
+inputs:
+  cosign-release:
+    description: 'Cosign release version to use in the actions.'
+    required: false
+    default: 'v0.1.0'
 runs:
   using: "composite"
   steps:
@@ -11,8 +16,32 @@ runs:
       shell: bash
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
     - run: |
-        sha=$(shasum -a 256 cosign | cut -d' ' -f1);
-        if [[ $(shasum -a 256 cosign | cut -d' ' -f1) != "fd2e09bb1ca5f5342227b85a4d3b1c498df1ab2439cafb3636381bb82ad29cea" ]]; then exit 1; fi
+        shaBootstrap=$(shasum -a 256 cosign | cut -d' ' -f1);
+        if [[ $shaBootstrap != "fd2e09bb1ca5f5342227b85a4d3b1c498df1ab2439cafb3636381bb82ad29cea" ]]; then exit 1; fi
+
+        semver='^v([0-9]+\.){0,2}(\*|[0-9]+)$'
+        if [[ ${{ inputs.cosign-release }} =~ $semver ]]; then
+          echo "INFO: Custom Cosign Version ${{ inputs.cosign-release }}"
+        else
+          echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
+          exit 1
+        fi
+
+        # Download custom cosign
+        curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign -o cosign_${{ inputs.cosign-release }}
+        shaCustom=$(shasum -a 256 cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
+
+        # check if is the same hash means it is the same release
+        if [[ $shaCustom != $shaBootstrap ]];
+        then
+          chmod +x cosign
+          curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign.sig
+          curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
+          ./cosign verify-blob --key cosign.pub --signature cosign.sig cosign_${{ inputs.cosign-release }}
+          if [[ $? != 0 ]]; then exit 1; fi
+          rm cosign
+          mv cosign_${{ inputs.cosign-release }} cosign
+        fi
       shell: bash
     - run: chmod +x cosign && mkdir -p $HOME/.cosign && mv cosign $HOME/.cosign/ && echo "$HOME/.cosign" >> $GITHUB_PATH
       shell: bash
