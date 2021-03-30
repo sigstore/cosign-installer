@@ -35,9 +35,9 @@ runs:
         if [[ $shaCustom != $shaBootstrap ]];
         then
           chmod +x cosign
-          curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign.sig
+          curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
           curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
-          ./cosign verify-blob --key cosign.pub --signature cosign.sig cosign_${{ inputs.cosign-release }}
+          ./cosign verify-blob --key cosign.pub --signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then exit 1; fi
           rm cosign
           mv cosign_${{ inputs.cosign-release }} cosign
