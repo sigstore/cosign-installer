@@ -28,7 +28,7 @@ runs:
         fi
 
         # Download custom cosign
-        curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign -o cosign_${{ inputs.cosign-release }}
+        curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign-linux-amd64 -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(shasum -a 256 cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
         # check if is the same hash means it is the same release
