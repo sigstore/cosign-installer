@@ -8,16 +8,16 @@ inputs:
   cosign-release:
     description: 'Cosign release version to use in the actions.'
     required: false
-    default: 'v0.1.0'
+    default: 'v0.2.0'
 runs:
   using: "composite"
   steps:
-    - run: curl -LO https://storage.googleapis.com/cosign-releases/v0.1.0/cosign
+    - run: curl -L https://storage.googleapis.com/cosign-releases/v0.2.0/cosign-linux-amd64 -o cosign
       shell: bash
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
     - run: |
         shaBootstrap=$(shasum -a 256 cosign | cut -d' ' -f1);
-        if [[ $shaBootstrap != "fd2e09bb1ca5f5342227b85a4d3b1c498df1ab2439cafb3636381bb82ad29cea" ]]; then exit 1; fi
+        if [[ $shaBootstrap != "677f64870f209b1f41a02247a65697138973e3fb36a0836565cf173b9282aad6" ]]; then exit 1; fi
 
         semver='^v([0-9]+\.){0,2}(\*|[0-9]+)$'
         if [[ ${{ inputs.cosign-release }} =~ $semver ]]; then
