@@ -9,7 +9,7 @@ Add the following entry to your Github workflow YAML file:
 ```yaml
 uses: sigstore/cosign-installer@main
 with:
-  cosign-release: 'v0.1.0' # optional with not set it will use the default one for the action
+  cosign-release: 'v0.2.0' # optional with not set it will use the default one for the action
 ```
 
 Example:
@@ -23,7 +23,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: 'v0.1.0'
+          cosign-release: 'v0.2.0'
       - name: Check install!
         run: cosign version
 ```
