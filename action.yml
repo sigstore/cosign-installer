@@ -1,9 +1,10 @@
 # action.yml
 name: install-cosign
 description: 'Install Cosign and put it on your path'
+branding:
+  icon: 'package'
+  color: 'blue'
 # This is pinned to the last major release, we have to bump it for each action version.
-# TODO: We should version the action separately from the binary, and add a paramter for which cosign
-# version to install.
 inputs:
   cosign-release:
     description: 'Cosign release version to use in the actions.'

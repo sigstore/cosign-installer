@@ -21,7 +21,7 @@ jobs:
     name: Install Cosign and test presence in path
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v0.1.0
         with:
           cosign-release: 'v0.2.0'
       - name: Check install!
@@ -37,7 +37,7 @@ jobs:
     name: Install Cosign and test presence in path
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v0.1.0
       - name: Check install!
         run: cosign version
 ```
