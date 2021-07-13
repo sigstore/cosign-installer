@@ -9,7 +9,7 @@ inputs:
   cosign-release:
     description: 'Cosign release version to use in the actions.'
     required: false
-    default: 'v0.4.0'
+    default: 'v0.6.0'
 runs:
   using: "composite"
   steps:
@@ -21,9 +21,9 @@ runs:
 
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
     - run: |
-        bootstrap_version='v0.4.0'
-        expected_bootstrap_version_digest='7425fb2cce21eb058e85d8a86bbb6d0e17ed7d98a25929f35835a6d910547e5e'
-        curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/cosign-linux-amd64 -o cosign
+        bootstrap_version='v0.6.0'
+        expected_bootstrap_version_digest='00add9839794d76a2863fd534677ff48686d796dea06ccef6b82422a5955b9bf'
+        curl -L https://storage.googleapis.com/cosign-releases/v0.6.0/cosign_linux_amd64 -o cosign
         shaBootstrap=$(shasum -a 256 cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then exit 1; fi
         chmod +x cosign
@@ -46,8 +46,14 @@ runs:
         # check if is the same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]];
         then
-          curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
-          curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
+          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]];
+          then
+            curl -LO https://github.com/sigstore/cosign/releases/download/v0.6.0/cosign_linux_amd64_0.6.0_linux_amd64.sig -o cosign-linux-amd64.sig
+            curl -LO https://raw.githubusercontent.com/sigstore/cosign/v0.6.0/release/release-cosign.pub -o cosign.pub
+          else
+            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
+            curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
+          fi
           ./cosign verify-blob -key cosign.pub -signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then exit 1; fi
           rm cosign
