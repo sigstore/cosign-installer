@@ -9,21 +9,15 @@ inputs:
   cosign-release:
     description: 'Cosign release version to use in the actions.'
     required: false
-    default: 'v0.6.0'
+    default: 'v1.0.0'
 runs:
   using: "composite"
   steps:
-    - run: |
-        sudo apt-get update -q
-        sudo apt-get install -yq \
-             libpcsclite1
-      shell: bash
-
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
     - run: |
-        bootstrap_version='v0.6.0'
-        expected_bootstrap_version_digest='00add9839794d76a2863fd534677ff48686d796dea06ccef6b82422a5955b9bf'
-        curl -L https://storage.googleapis.com/cosign-releases/v0.6.0/cosign_linux_amd64 -o cosign
+        bootstrap_version='v1.0.0'
+        expected_bootstrap_version_digest='e36a05ab402bfee5463ad4752d8dc2941204c7b01a9a9931f921e91d94ba2484'
+        curl -L https://storage.googleapis.com/cosign-releases/v1.0.0/cosign-linux-amd64 -o cosign
         shaBootstrap=$(shasum -a 256 cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then exit 1; fi
         chmod +x cosign
@@ -40,21 +34,30 @@ runs:
         fi
 
         # Download custom cosign
-        curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign-linux-amd64 -o cosign_${{ inputs.cosign-release }}
+        if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+          curl -L https://storage.googleapis.com/cosign-releases/v0.6.0/cosign_linux_amd64 -o cosign_${{ inputs.cosign-release }}
+        else
+          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign-linux-amd64 -o cosign_${{ inputs.cosign-release }}
+        fi
         shaCustom=$(shasum -a 256 cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
-        # check if is the same hash means it is the same release
+        # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]];
         then
-          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]];
-          then
-            curl -LO https://github.com/sigstore/cosign/releases/download/v0.6.0/cosign_linux_amd64_0.6.0_linux_amd64.sig -o cosign-linux-amd64.sig
-            curl -LO https://raw.githubusercontent.com/sigstore/cosign/v0.6.0/release/release-cosign.pub -o cosign.pub
+          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+            # v0.6.0's linux release has a dependency on `libpcsclite1`
+            sudo apt-get update -q
+            sudo apt-get install -yq libpcsclite1
+            curl -L https://github.com/sigstore/cosign/releases/download/v0.6.0/cosign_linux_amd64_0.6.0_linux_amd64.sig -o cosign-linux-amd64.sig
           else
             curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
-            curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
           fi
-          ./cosign verify-blob -key cosign.pub -signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
+          if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
+            curl -L https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub -o release-cosign.pub
+          else
+            curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
+          fi
+          ./cosign verify-blob -key release-cosign.pub -signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then exit 1; fi
           rm cosign
           mv cosign_${{ inputs.cosign-release }} cosign

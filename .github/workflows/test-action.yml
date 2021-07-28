@@ -22,6 +22,17 @@ jobs:
       - name: Check install!
         run: cosign version
 
+  test_cosign_action_0_6_0:
+    runs-on: ubuntu-latest
+    name: Install Cosign v0.6.0 and test presence in path
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v0.6.0'
+      - name: Check install!
+        run: cosign version
+
 
   test_cosign_action_wrong:
     runs-on: ubuntu-latest
