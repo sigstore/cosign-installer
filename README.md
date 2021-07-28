@@ -1,6 +1,7 @@
 # cosign-installer GitHub Action
 
-This action enables you to sign and verify container images. `cosign-installer` verifies the integrity of the `cosign` release during installation
+This action enables you to sign and verify container images using `cosign`.
+`cosign-installer` verifies the integrity of the `cosign` release during installation.
 
 For a quick start guide on the usage of `cosign`, please refer to https://github.com/sigstore/cosign#quick-start.
 For available `cosign` releases, see https://github.com/sigstore/cosign/releases.
@@ -12,7 +13,7 @@ Add the following entry to your Github workflow YAML file:
 ```yaml
 uses: sigstore/cosign-installer@main
 with:
-  cosign-release: 'v0.4.0' # optional
+  cosign-release: 'v1.0.0' # optional
 ```
 
 Example using a pinned version:
@@ -26,7 +27,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: 'v0.4.0'
+          cosign-release: 'v1.0.0'
       - name: Check install!
         run: cosign version
 ```
