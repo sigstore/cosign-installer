@@ -6,29 +6,44 @@ jobs:
     runs-on: ubuntu-latest
     name: Install Cosign and test presence in path
     steps:
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-      - name: Check install!
-        run: cosign version
+    - uses: actions/checkout@v2
+    - name: Install Cosign
+      uses: ./
+    - name: Check install!
+      run: cosign version
 
   test_cosign_action_custom:
     runs-on: ubuntu-latest
     name: Install Custom Cosign and test presence in path
     steps:
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: 'v0.2.0'
-      - name: Check install!
-        run: cosign version
+    - uses: actions/checkout@v2
+    - name: Install Cosign
+      uses: ./
+      with:
+        cosign-release: 'v0.2.0'
+    - name: Check install!
+      run: cosign version
+
+  test_cosign_action_0_6_0:
+    runs-on: ubuntu-latest
+    name: Install Cosign v0.6.0 and test presence in path
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Cosign
+      uses: ./
+      with:
+        cosign-release: 'v0.6.0'
+    - name: Check install!
+      run: cosign version
 
 
   test_cosign_action_wrong:
     runs-on: ubuntu-latest
     name: Try to install a wrong Cosign
     steps:
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: 'honk'
-        continue-on-error: true
+    - uses: actions/checkout@v2
+    - name: Install Cosign
+      uses: ./
+      with:
+        cosign-release: 'honk'
+      continue-on-error: true
