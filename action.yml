@@ -46,8 +46,16 @@ runs:
         then
           if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
             # v0.6.0's linux release has a dependency on `libpcsclite1`
-            sudo apt-get update -q
-            sudo apt-get install -yq libpcsclite1
+            set +e
+            sudo dpkg -s libpcsclite1
+            if [ $? -eq 0 ]; then
+                echo "INFO: libpcsclite1 package is already installed"
+            else
+                 echo "INFO: libpcsclite1 package is not installed, installing it now."
+                 sudo apt-get update -q
+                 sudo apt-get install -yq libpcsclite1
+            fi
+            set -e
             curl -L https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign_linux_amd64_0.6.0_linux_amd64.sig -o cosign-linux-amd64.sig
           else
             curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
