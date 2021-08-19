@@ -36,6 +36,21 @@ jobs:
     - name: Check install!
       run: cosign version
 
+  test_cosign_action_0_6_0_with_pre_installed_libpcsclite1_package:
+    runs-on: ubuntu-latest
+    name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install libpcsclite1
+      run: |
+        sudo apt-get update -q
+        sudo apt-get install -yq libpcsclite1
+    - name: Install Cosign
+      uses: ./
+      with:
+        cosign-release: 'v0.6.0'
+    - name: Check install!
+      run: cosign version
 
   test_cosign_action_wrong:
     runs-on: ubuntu-latest
