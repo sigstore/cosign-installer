@@ -1,1 +1,8 @@
 @sigstore/cosign-installer-codeowners
+
+# The CODEOWNERS are managed via a GitHub team, but the current list is (alphabetically):
+# cpanato
+# dekakgaijin
+# dlorenc
+# lukehinds
+# mbestavros
