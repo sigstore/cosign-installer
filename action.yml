@@ -74,3 +74,5 @@ runs:
       shell: bash
     - run: mkdir -p $HOME/.cosign && mv cosign $HOME/.cosign/ && echo "$HOME/.cosign" >> $GITHUB_PATH
       shell: bash
+    - run: rm -f *.pub
+      shell: bash
