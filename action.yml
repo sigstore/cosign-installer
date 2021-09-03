@@ -15,6 +15,11 @@ runs:
   steps:
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
     - run: |
+        trap "popd" EXIT
+
+        mkdir -p $HOME/.cosign
+        pushd $HOME/.cosign
+
         bootstrap_version='v1.1.0'
         expected_bootstrap_version_digest='c0b66f6948361f7f2c8c569d82d9471f36dd8354cf43f6bba6e578b31944127b'
         curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/cosign-linux-amd64 -o cosign
@@ -60,19 +65,20 @@ runs:
           else
             curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
           fi
+
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
-            curl -L https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub -o release-cosign.pub
+            RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
           else
-            curl -LO https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
+            RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           fi
-          ./cosign verify-blob -key release-cosign.pub -signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
+
+          ./cosign verify-blob -key $RELEASE_COSIGN_PUB_KEY -signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then exit 1; fi
+
           rm cosign
           mv cosign_${{ inputs.cosign-release }} cosign
           chmod +x cosign
         fi
       shell: bash
-    - run: mkdir -p $HOME/.cosign && mv cosign $HOME/.cosign/ && echo "$HOME/.cosign" >> $GITHUB_PATH
-      shell: bash
-    - run: rm -f *.pub
+    - run:  echo "$HOME/.cosign" >> $GITHUB_PATH
       shell: bash
