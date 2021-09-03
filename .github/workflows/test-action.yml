@@ -11,6 +11,32 @@ jobs:
       uses: ./
     - name: Check install!
       run: cosign version
+    - name: Check root directory
+      run: |
+        if [[ $(git diff --stat) != '' ]]; then
+          echo 'should be clean'
+          exit 1
+        else
+          exit 0
+        fi
+
+  test_existing_release_action:
+    runs-on: ubuntu-latest
+    name: Install existing release of Cosign and test presence in path
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v1.1.0
+    - name: Check install!
+      run: cosign version
+    - name: Check root directory
+      run: |
+        if [[ $(git diff --stat) != '' ]]; then
+          echo 'should be clean'
+          exit 1
+        else
+          exit 0
+        fi
 
   test_cosign_action_custom:
     runs-on: ubuntu-latest
@@ -23,6 +49,14 @@ jobs:
         cosign-release: 'v0.2.0'
     - name: Check install!
       run: cosign version
+    - name: Check root directory
+      run: |
+        if [[ $(git diff --stat) != '' ]]; then
+          echo 'should be clean'
+          exit 1
+        else
+          exit 0
+        fi
 
   test_cosign_action_0_6_0:
     runs-on: ubuntu-latest
@@ -35,6 +69,14 @@ jobs:
         cosign-release: 'v0.6.0'
     - name: Check install!
       run: cosign version
+    - name: Check root directory
+      run: |
+        if [[ $(git diff --stat) != '' ]]; then
+          echo 'should be clean'
+          exit 1
+        else
+          exit 0
+        fi
 
   test_cosign_action_0_6_0_with_pre_installed_libpcsclite1_package:
     runs-on: ubuntu-latest
@@ -51,6 +93,14 @@ jobs:
         cosign-release: 'v0.6.0'
     - name: Check install!
       run: cosign version
+    - name: Check root directory
+      run: |
+        if [[ $(git diff --stat) != '' ]]; then
+          echo 'should be clean'
+          exit 1
+        else
+          exit 0
+        fi
 
   test_cosign_action_wrong:
     runs-on: ubuntu-latest
