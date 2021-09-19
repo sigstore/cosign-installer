@@ -1,9 +1,21 @@
 name: test-cosign
+
 on: [pull_request]
 
 jobs:
   test_cosign_action:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
     name: Install Cosign and test presence in path
     steps:
     - uses: actions/checkout@v2
@@ -22,6 +34,17 @@ jobs:
 
   test_existing_release_action:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
     name: Install existing release of Cosign and test presence in path
     steps:
     - uses: actions/checkout@v2
@@ -40,6 +63,17 @@ jobs:
 
   test_cosign_action_custom:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
     name: Install Custom Cosign and test presence in path
     steps:
     - uses: actions/checkout@v2
@@ -60,6 +94,17 @@ jobs:
 
   test_cosign_action_0_6_0:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
     name: Install Cosign v0.6.0 and test presence in path
     steps:
     - uses: actions/checkout@v2
@@ -80,6 +125,17 @@ jobs:
 
   test_cosign_action_0_6_0_with_pre_installed_libpcsclite1_package:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
     - uses: actions/checkout@v2
@@ -104,6 +160,17 @@ jobs:
 
   test_cosign_action_wrong:
     runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
     name: Try to install a wrong Cosign
     steps:
     - uses: actions/checkout@v2
