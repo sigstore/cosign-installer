@@ -9,7 +9,7 @@ inputs:
   cosign-release:
     description: 'Cosign release version to use in the actions.'
     required: false
-    default: 'v1.2.0'
+    default: 'v1.2.1'
 runs:
   using: "composite"
   steps:
@@ -20,8 +20,8 @@ runs:
         mkdir -p $HOME/.cosign
         pushd $HOME/.cosign
 
-        bootstrap_version='v1.2.0'
-        expected_bootstrap_version_digest='690e9d6220aa715b61e332a0efefb60f4f4889cb8c0d0195d28a406425d617f0'
+        bootstrap_version='v1.2.1'
+        expected_bootstrap_version_digest='490cb1941aa317cd24a0bd9f2fe38932805dbaaba0ae89c12ec8138d15bdd8a0'
         curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/cosign-linux-amd64 -o cosign
         shaBootstrap=$(sha256sum cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then exit 1; fi
