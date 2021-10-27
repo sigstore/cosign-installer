@@ -96,6 +96,7 @@ jobs:
       repository-projects: none
       security-events: none
       statuses: none
+      id-token: write # needed for signing the images with GitHub OIDC **not production ready**
 
     name: Install Cosign and test presence in path
     steps:
@@ -111,19 +112,34 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - id: docker_meta
+        uses: docker/metadata-action@v3.6.0
+        with:
+          images: ghcr.io/sigstore/sample-honk
+          tags: type=sha,format=long
+
       - name: Build and Push container images
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./Dockerfile
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
-          tags: |
-            ghcr.io/sigstore/sample-honk:${{ github.sha }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
 
-      - name: Sign image
+      - name: Sign image with a key
         run: |
-          cosign sign -key my_cosign.key ghcr.io/sigstore/sample-honk:${{ github.sha }}
+          echo ${COSIGN_KEY} > /tmp/my_cosign.key && \
+          cosign sign -key /tmp/my_cosign.key ${TAGS}
+        env:
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
+          COSIGN_KEY: ${{secrets.COSIGN_KEY}}
+          COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
+
+      - name: Sign the images with GitHub OIDC **not production ready**
+        run: cosign sign -oidc-issuer https://token.actions.githubusercontent.com ${TAGS}
+        env:
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
+          COSIGN_EXPERIMENTAL: 1
 ```
 
 ### Optional Inputs
