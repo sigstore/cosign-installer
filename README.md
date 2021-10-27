@@ -127,9 +127,12 @@ jobs:
 
       - name: Sign image with a key
         run: |
-          cosign sign -key my_cosign.key ${TAGS}
+          echo ${COSIGN_KEY} > /tmp/my_cosign.key && \
+          cosign sign -key /tmp/my_cosign.key ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
+          COSIGN_KEY: ${{secrets.COSIGN_KEY}}
+          COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
 =
 ```
 
