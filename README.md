@@ -111,17 +111,26 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - id: docker_meta
+        uses: docker/metadata-action@v3.6.0
+        with:
+          images: ghcr.io/sigstore/sample-honk
+          tags: type=sha,format=long
+
       - name: Build and Push container images
         uses: docker/build-push-action@v2
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
-          tags: |
-            ghcr.io/sigstore/sample-honk:${{ github.sha }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          labels: ${{ steps.docker_meta.outputs.labels }}
 
-      - name: Sign image
+      - name: Sign image with a key
         run: |
-          cosign sign -key my_cosign.key ghcr.io/sigstore/sample-honk:${{ github.sha }}
+          cosign sign -key my_cosign.key ${TAGS}
+        env:
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
+=
 ```
 
 ### Optional Inputs
