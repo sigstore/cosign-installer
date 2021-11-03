@@ -72,7 +72,7 @@ runs:
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           fi
 
-          ./cosign verify-blob -key $RELEASE_COSIGN_PUB_KEY -signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
+          ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then exit 1; fi
 
           rm cosign
