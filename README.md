@@ -40,7 +40,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: 'v1.2.1'
+          cosign-release: 'v1.3.0'
       - name: Check install!
         run: cosign version
 ```
