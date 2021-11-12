@@ -129,14 +129,14 @@ jobs:
       - name: Sign image with a key
         run: |
           echo ${COSIGN_KEY} > /tmp/my_cosign.key && \
-          cosign sign -key /tmp/my_cosign.key ${TAGS}
+          cosign sign --key /tmp/my_cosign.key ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
           COSIGN_KEY: ${{secrets.COSIGN_KEY}}
           COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
 
       - name: Sign the images with GitHub OIDC **not production ready**
-        run: cosign sign -oidc-issuer https://token.actions.githubusercontent.com ${TAGS}
+        run: cosign sign --oidc-issuer https://token.actions.githubusercontent.com ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
           COSIGN_EXPERIMENTAL: 1
