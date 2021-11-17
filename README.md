@@ -88,7 +88,7 @@ jobs:
     permissions:
       actions: none
       checks: none
-      contents: none
+      contents: read
       deployments: none
       issues: none
       packages: write
