@@ -10,6 +10,10 @@ inputs:
     description: 'Cosign release version to use in the actions.'
     required: false
     default: 'v1.4.1'
+  install-dir:
+    description: 'Where to install the cosign binary'
+    required: false
+    default: '$HOME/.cosign'
 runs:
   using: "composite"
   steps:
@@ -17,8 +21,8 @@ runs:
     - run: |
         trap "popd" EXIT
 
-        mkdir -p $HOME/.cosign
-        pushd $HOME/.cosign
+        mkdir -p ${{ inputs.install-dir }}
+        pushd ${{ inputs.install-dir }}
 
         bootstrap_version='v1.4.1'
         expected_bootstrap_version_digest='08ba779a4e6ff827079abed1a6d1f0a0d9e48aea21f520ddeb42ff912f59d268'
@@ -80,5 +84,5 @@ runs:
           chmod +x cosign
         fi
       shell: bash
-    - run:  echo "$HOME/.cosign" >> $GITHUB_PATH
+    - run:  echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
       shell: bash
