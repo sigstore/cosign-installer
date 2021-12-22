@@ -179,3 +179,41 @@ jobs:
       with:
         cosign-release: 'honk'
       continue-on-error: true
+  test_cosign_action_custom_dir:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: none
+      checks: none
+      contents: none
+      deployments: none
+      issues: none
+      packages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
+    name: Install Custom Cosign and test presence in path
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Cosign
+        uses: ./
+        with:
+          install-dir: "$HOME/.cosigntest"
+      - name: Check install!
+        run: cosign version
+      - name: Check install dir!
+        run: |
+          if [[ $(basename `which cosign`) == "$HOME/.cosigntest" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
+      - name: Check root directory
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            echo 'should be clean'
+            exit 1
+          else
+            exit 0
+          fi
+
