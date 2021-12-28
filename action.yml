@@ -82,7 +82,7 @@ runs:
         set -e
         expected_bootstrap_version_digest=${bootstrap_sha}
         curl -Lv https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
-        shaBootstrap=$(sha256sum cosign | cut -d' ' -f1);
+        shaBootstrap=${{ hashfiles('cosign') }}
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
           exit 1
@@ -106,7 +106,7 @@ runs:
         else
           curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${bootstrap_filename} -o cosign_${{ inputs.cosign-release }}
         fi
-        shaCustom=$(sha256sum cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
+        shaCustom=${{ hashfiles('cosign_${{ inputs.cosign-release }}')}}
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]];
