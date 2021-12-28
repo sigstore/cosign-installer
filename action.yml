@@ -36,6 +36,7 @@ runs:
 
         case ${{ runner.os }} in
           Linux)
+            shaprog='sha256sum'
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-linux-amd64'
@@ -60,6 +61,7 @@ runs:
             ;;
           
           macOS)
+            shaprog='shasum -a256'
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-darwin-amd64'
@@ -77,7 +79,6 @@ runs:
                 ;;
             esac
             ;;
-
           *)
             echo "ERROR: unsupported architecture $arch"
             exit 1
@@ -87,7 +88,7 @@ runs:
         set -e
         expected_bootstrap_version_digest=${bootstrap_sha}
         curl -Lv https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
-        shaBootstrap=${{ hashfiles('cosign') }}
+        shaBootstrap=$(${shaprog} cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
           exit 1
@@ -111,7 +112,7 @@ runs:
         else
           curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${bootstrap_filename} -o cosign_${{ inputs.cosign-release }}
         fi
-        shaCustom=${{ hashfiles('cosign_${{ inputs.cosign-release }}')}}
+        shaCustom=$(${shaprog} cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]];
