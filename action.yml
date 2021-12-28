@@ -1,13 +1,14 @@
 # action.yml
 name: install-cosign
-description: 'Install Cosign and put it on your path'
+author: sigstore
+description: 'Installs cosign and includes it in your path'
 branding:
   icon: 'package'
   color: 'blue'
 # This is pinned to the last major release, we have to bump it for each action version.
 inputs:
   cosign-release:
-    description: 'Cosign release version to use in the actions.'
+    description: 'cosign release version to be installed'
     required: false
     default: 'v1.4.1'
   install-dir:
@@ -18,19 +19,74 @@ runs:
   using: "composite"
   steps:
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
-    - run: |
+    - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      shell: bash
+      with:
+        bootstrap_version: 'v1.4.1'    
+        bootstrap_linux_amd64_sha: '08ba779a4e6ff827079abed1a6d1f0a0d9e48aea21f520ddeb42ff912f59d268'
+        bootstrap_linux_arm_sha: 'd13f12dea3b65ec4bcd25fe23d35772f7b0b5997dba14947ce242e1260b3a15d'
+        bootstrap_linux_arm64_sha: 'b0c02b607e722b9d2b1807f6efb73042762e77391c51c8948710e7f571ceaa73'
+        bootstrap_darwin_amd64_sha: '0908ffd3ceea5534c27059e30276094d63ed9339c2bf75e38e3d88d0a34502f3'
+        bootstrap_darwin_arm64_sha: 'f8162aba987e1afddb20a672e47fb070ec6bf1547f65f23159e0f4a61e4ea673'
+      run: |
         trap "popd" EXIT
 
         mkdir -p ${{ inputs.install-dir }}
         pushd ${{ inputs.install-dir }}
 
-        echo ${{ runner.os }}
+        case ${{ runner.os }} in
+          Linux)
+            case ${{ runner.arch }} in
+              X64)
+                bootstrap_filename='cosign-linux-amd64'
+                bootstrap_sha=$INPUT_BOOTSTRAP_LINUX_AMD64_SHA
+                ;;
+              
+              ARM)
+                bootstrap_filename='cosign-linux-arm'
+                bootstrap_sha=$INPUT_BOOTSTRAP_LINUX_ARM_SHA
+                ;;
+              
+              ARM64)
+                bootstrap_filename='cosign-linux-arm64'
+                bootstrap_sha=$INPUT_BOOTSTRAP_LINUX_ARM64_SHA
+                ;;
+              
+              *)
+                echo "ERROR: unsupported architecture $arch"
+                exit 1
+                ;;
+            esac
+            ;;
+          
+          Darwin)
+            case ${{ runner.arch }} in
+              X64)
+                bootstrap_filename='cosign-darwin-amd64'
+                bootstrap_sha=$INPUT_BOOTSTRAP_DARWIN_AMD64_SHA
+                ;;
+              
+              ARM64)
+                bootstrap_filename='cosign-darwin-arm64'
+                bootstrap_sha=$INPUT_BOOTSTRAP_DARWIN_ARM64_SHA
+                ;;
+              
+              *)
+                echo "ERROR: unsupported architecture $arch"
+                exit 1
+                ;;
+            esac
+            ;;
+        esac
 
-        bootstrap_version='v1.4.1'
-        expected_bootstrap_version_digest='08ba779a4e6ff827079abed1a6d1f0a0d9e48aea21f520ddeb42ff912f59d268'
-        curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/cosign-linux-amd64 -o cosign
+        bootstrap_version=${INPUT_BOOTSTRAP_VERSION}
+        expected_bootstrap_version_digest=${bootstrap_sha}
+        curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
         shaBootstrap=$(sha256sum cosign | cut -d' ' -f1);
-        if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then exit 1; fi
+        if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
+          echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
+          exit 1
+        fi
         chmod +x cosign
 
         # If the bootstrap and specified `cosign` releases are the same, we're done.
@@ -46,16 +102,16 @@ runs:
 
         # Download custom cosign
         if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign_linux_amd64 -o cosign_${{ inputs.cosign-release }}
+          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${bootstrap_filename} -o cosign_${{ inputs.cosign-release }}
         else
-          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/cosign-linux-amd64 -o cosign_${{ inputs.cosign-release }}
+          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${bootstrap_filename} -o cosign_${{ inputs.cosign-release }}
         fi
         shaCustom=$(sha256sum cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]];
         then
-          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' -a ${{ runner.os}} == 'Linux' ]]; then
             # v0.6.0's linux release has a dependency on `libpcsclite1`
             set +e
             sudo dpkg -s libpcsclite1
@@ -67,9 +123,9 @@ runs:
                  sudo apt-get install -yq libpcsclite1
             fi
             set -e
-            curl -L https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign_linux_amd64_0.6.0_linux_amd64.sig -o cosign-linux-amd64.sig
+            curl -L https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign_linux_amd64_0.6.0_linux_amd64.sig -o ${bootstrap_filename}.sig
           else
-            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign-linux-amd64.sig
+            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${bootstrap_filename}.sig
           fi
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
@@ -78,13 +134,15 @@ runs:
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           fi
 
-          ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature cosign-linux-amd64.sig cosign_${{ inputs.cosign-release }}
-          if [[ $? != 0 ]]; then exit 1; fi
+          ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${bootstrap_filename}.sig cosign_${{ inputs.cosign-release }}
+          if [[ $? != 0 ]]; then
+            echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}' using release public key"
+            exit 1
+          fi
 
           rm cosign
           mv cosign_${{ inputs.cosign-release }} cosign
           chmod +x cosign
         fi
-      shell: bash
     - run:  echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
       shell: bash
