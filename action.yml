@@ -86,9 +86,8 @@ runs:
             ;;
         esac
 
-        set -e
         expected_bootstrap_version_digest=${bootstrap_sha}
-        curl -Lv https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
+        curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
         shaBootstrap=$(${shaprog} cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
