@@ -24,6 +24,8 @@ runs:
         mkdir -p ${{ inputs.install-dir }}
         pushd ${{ inputs.install-dir }}
 
+        echo ${{ runner.os }}
+
         bootstrap_version='v1.4.1'
         expected_bootstrap_version_digest='08ba779a4e6ff827079abed1a6d1f0a0d9e48aea21f520ddeb42ff912f59d268'
         curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/cosign-linux-amd64 -o cosign
