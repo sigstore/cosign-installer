@@ -28,6 +28,7 @@ runs:
         bootstrap_linux_arm64_sha='b0c02b607e722b9d2b1807f6efb73042762e77391c51c8948710e7f571ceaa73'
         bootstrap_darwin_amd64_sha='0908ffd3ceea5534c27059e30276094d63ed9339c2bf75e38e3d88d0a34502f3'
         bootstrap_darwin_arm64_sha='f8162aba987e1afddb20a672e47fb070ec6bf1547f65f23159e0f4a61e4ea673'
+
         trap "popd" EXIT
 
         mkdir -p ${{ inputs.install-dir }}
@@ -38,17 +39,17 @@ runs:
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-linux-amd64'
-                bootstrap_sha=$INPUT_BOOTSTRAP_LINUX_AMD64_SHA
+                bootstrap_sha=${bootstrap_linux_amd64_sha}
                 ;;
               
               ARM)
                 bootstrap_filename='cosign-linux-arm'
-                bootstrap_sha=$INPUT_BOOTSTRAP_LINUX_ARM_SHA
+                bootstrap_sha=${bootstrap_linux_arm_sha}
                 ;;
               
               ARM64)
                 bootstrap_filename='cosign-linux-arm64'
-                bootstrap_sha=$INPUT_BOOTSTRAP_LINUX_ARM64_SHA
+                bootstrap_sha=${bootstrap_linux_arm64_sha}
                 ;;
               
               *)
@@ -62,12 +63,12 @@ runs:
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-darwin-amd64'
-                bootstrap_sha=$INPUT_BOOTSTRAP_DARWIN_AMD64_SHA
+                bootstrap_sha=${bootstrap_darwin_amd64_sha}
                 ;;
               
               ARM64)
                 bootstrap_filename='cosign-darwin-arm64'
-                bootstrap_sha=$INPUT_BOOTSTRAP_DARWIN_ARM64_SHA
+                bootstrap_sha=${bootstrap_darwin_arm64_sha}
                 ;;
               
               *)
@@ -78,9 +79,9 @@ runs:
             ;;
         esac
 
-        bootstrap_version=${INPUT_BOOTSTRAP_VERSION}
+        set -e
         expected_bootstrap_version_digest=${bootstrap_sha}
-        curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
+        curl -Lv https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
         shaBootstrap=$(sha256sum cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
