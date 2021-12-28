@@ -59,7 +59,7 @@ runs:
             esac
             ;;
           
-          Darwin)
+          macOS)
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-darwin-amd64'
@@ -76,6 +76,11 @@ runs:
                 exit 1
                 ;;
             esac
+            ;;
+
+          *)
+            echo "ERROR: unsupported architecture $arch"
+            exit 1
             ;;
         esac
 
