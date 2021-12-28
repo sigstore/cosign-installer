@@ -139,6 +139,7 @@ runs:
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           fi
 
+          set -x
           ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${bootstrap_filename}.sig cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then
             echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}' using release public key"
