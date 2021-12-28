@@ -117,7 +117,7 @@ runs:
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]]; then
-          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' -a ${{ runner.os }} == 'Linux' ]]; then
+          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' && ${{ runner.os }} == 'Linux' ]]; then
             # v0.6.0's linux release has a dependency on `libpcsclite1`
             set +e
             sudo dpkg -s libpcsclite1
