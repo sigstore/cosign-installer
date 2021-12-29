@@ -24,13 +24,9 @@ runs:
       run: |
         #!/bin/bash
         # cosign install script
-        BOLD='\e[1m'
-        RED='\e[31m'
-        GREEN='\e[32m'
-        DEF='\e[0m'
         shopt -s expand_aliases
-        alias log_info="echo -e \"${BOLD}${GREEN}INFO${DEF}:\""
-        alias log_error="echo -e \"${BOLD}${RED}ERROR${DEF}:\""
+        alias log_info="echo -e \"$(tput bold)$(tput setaf 2)INFO$(tput sgr0):\""
+        alias log_error="echo -e \"$(tput bold)$(tput setaf 1}ERROR$(tput sgr0):\""
         set -e
 
         bootstrap_version='v1.4.1'    
