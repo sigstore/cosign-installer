@@ -96,7 +96,7 @@ jobs:
       repository-projects: none
       security-events: none
       statuses: none
-      id-token: write # needed for signing the images with GitHub OIDC **not production ready**
+      id-token: write # needed for signing the images with GitHub OIDC Token **not production ready**
 
     name: Install Cosign and test presence in path
     steps:
@@ -135,8 +135,8 @@ jobs:
           COSIGN_KEY: ${{secrets.COSIGN_KEY}}
           COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
 
-      - name: Sign the images with GitHub OIDC **not production ready**
-        run: cosign sign --oidc-issuer https://token.actions.githubusercontent.com ${TAGS}
+      - name: Sign the images with GitHub OIDC Token **not production ready**
+        run: cosign sign ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
           COSIGN_EXPERIMENTAL: 1
@@ -148,6 +148,7 @@ The following optional inputs:
 | Input | Description |
 | --- | --- |
 | `cosign-release` | `cosign` version to use instead of the default. |
+| `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). |
 
 ## Security
 
