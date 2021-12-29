@@ -83,7 +83,7 @@ runs:
                 bootstrap_sha=${bootstrap_darwin_amd64_sha}
                 desired_cosign_filename='cosign-darwin-amd64'
                 # v0.6.0 had different filename structures from all other releases
-                if [[ ${{ inputs.cosign-release }} == 'v0.6.0']]; then
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   desired_cosign_filename='cosign_darwin_amd64_0.6.0_darwin_amd64'
                 fi
                 ;;
@@ -93,7 +93,7 @@ runs:
                 bootstrap_sha=${bootstrap_darwin_arm64_sha}
                 desired_cosign_filename='cosign-darwin-arm64'
                 # v0.6.0 had different filename structures from all other releases
-                if [[ ${{ inputs.cosign-release }} == 'v0.6.0']]; then
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   desired_cosign_filename='cosign_darwin_arm64_0.6.0_darwin_arm64'
                 fi
                 ;;
