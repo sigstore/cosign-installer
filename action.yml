@@ -153,7 +153,7 @@ runs:
             fi
           fi
           if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature}.sig -o ${desired_cosign_filename}.sig
+            curl -L https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
           else
             curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
           fi
