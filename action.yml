@@ -24,11 +24,12 @@ runs:
       run: |
         #!/bin/bash
         # cosign install script
-        RED='\033[0;31m'
-        GREEN='\033[0;32m'
-        NC='\033[0m' # No Color
-        alias log_info="echo -e "${GREEN}INFO${NC}:"
-        alias log_error="echo -e "${RED}ERROR${NC}:"
+        BOLD='\e[1m'
+        RED='\e[31m'
+        GREEN='\e[32m'
+        DEF='\e[0m'
+        alias log_info="echo -e \"${BOLD}${GREEN}INFO${DEF}:\""
+        alias log_error="echo -e \"${BOLD}${RED}ERROR${DEF}:\""
         set -e
 
         bootstrap_version='v1.4.1'    
