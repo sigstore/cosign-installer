@@ -1,5 +1,5 @@
 # action.yml
-name: install-cosign
+name: cosign-installer
 author: sigstore
 description: 'Installs cosign and includes it in your path'
 branding:
