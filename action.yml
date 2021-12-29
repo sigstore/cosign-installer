@@ -22,6 +22,10 @@ runs:
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       shell: bash
       run: |
+        #!/bin/bash
+        # cosign install script
+        set -e
+
         bootstrap_version='v1.4.1'    
         bootstrap_linux_amd64_sha='08ba779a4e6ff827079abed1a6d1f0a0d9e48aea21f520ddeb42ff912f59d268'
         bootstrap_linux_arm_sha='d13f12dea3b65ec4bcd25fe23d35772f7b0b5997dba14947ce242e1260b3a15d'
@@ -32,7 +36,7 @@ runs:
         trap "popd" EXIT
 
         mkdir -p ${{ inputs.install-dir }}
-        pushd ${{ inputs.install-dir }}
+        pushd ${{ inputs.install-dir }} > /dev/null
 
         case ${{ runner.os }} in
           Linux)
@@ -115,7 +119,10 @@ runs:
         esac
 
         expected_bootstrap_version_digest=${bootstrap_sha}
-        curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
+        echo "INFO: Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed..."
+        set +x
+        curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
+        set -x
         shaBootstrap=$(${shaprog} cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
@@ -124,18 +131,24 @@ runs:
         chmod +x cosign
 
         # If the bootstrap and specified `cosign` releases are the same, we're done.
-        if [[ ${{ inputs.cosign-release }} == ${bootstrap_version} ]]; then exit 0; fi
+        if [[ ${{ inputs.cosign-release }} == ${bootstrap_version} ]]; then
+          echo "INFO: bootstrap version successfully verified and matches requested version so nothing else to do"
+          exit 0
+        fi
 
         semver='^v([0-9]+\.){0,2}(\*|[0-9]+)$'
         if [[ ${{ inputs.cosign-release }} =~ $semver ]]; then
-          echo "INFO: Custom Cosign Version ${{ inputs.cosign-release }}"
+          echo "INFO: Custom cosign version '${{ inputs.cosign-release }}' requested"
         else
-          echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
+          echo "ERROR: Unable to validate requested cosign version: '${{ inputs.cosign-release }}'"
           exit 1
         fi
 
         # Download custom cosign
-        curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
+        echo "INFO: Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign..."
+        set +x
+        curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
+        set -x
         shaCustom=$(${shaprog} cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
         # same hash means it is the same release
@@ -151,12 +164,17 @@ runs:
                  sudo apt-get update -q
                  sudo apt-get install -yq libpcsclite1
             fi
+            set -e
           fi
+
+          echo "INFO: Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign..."
+          set +x
           if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-            curl -L https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
+            curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
           else
-            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
+            curl -sLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
           fi
+          set -x
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
@@ -164,17 +182,12 @@ runs:
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           fi
 
-          set -x
+          echo "INFO: Using bootstrap cosign to verify signature of desired cosign version"
           ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
-          if [[ $? != 0 ]]; then
-            echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}' using release public key"
-            exit 1
-          fi
 
           rm cosign
           mv cosign_${{ inputs.cosign-release }} cosign
           chmod +x cosign
+          echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
+          echo "INFO: Installation complete!"
         fi
-    - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
-      run:  echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
-      shell: bash
