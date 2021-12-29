@@ -41,16 +41,31 @@ runs:
               X64)
                 bootstrap_filename='cosign-linux-amd64'
                 bootstrap_sha=${bootstrap_linux_amd64_sha}
+                desired_cosign_filename='cosign-linux-amd64'
+                # v0.6.0 had different filename structures from all other releases
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+                  desired_cosign_filename='cosign_linux_amd64_0.6.0_linux_amd64'
+                fi
                 ;;
               
               ARM)
                 bootstrap_filename='cosign-linux-arm'
                 bootstrap_sha=${bootstrap_linux_arm_sha}
+                desired_cosign_filename='cosign-linux-arm'
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+                  echo "ERROR: linux-arm build not available at v0.6.0"
+                  exit 1
+                fi
                 ;;
               
               ARM64)
                 bootstrap_filename='cosign-linux-arm64'
                 bootstrap_sha=${bootstrap_linux_arm64_sha}
+                desired_cosign_filename='cosign-linux-amd64'
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+                  echo "ERROR: linux-arm64 build not available at v0.6.0"
+                  exit 1
+                fi
                 ;;
               
               *)
@@ -66,11 +81,21 @@ runs:
               X64)
                 bootstrap_filename='cosign-darwin-amd64'
                 bootstrap_sha=${bootstrap_darwin_amd64_sha}
+                desired_cosign_filename='cosign-darwin-amd64'
+                # v0.6.0 had different filename structures from all other releases
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0']]; then
+                  desired_cosign_filename='cosign_darwin_amd64_0.6.0_darwin_amd64'
+                fi
                 ;;
               
               ARM64)
                 bootstrap_filename='cosign-darwin-arm64'
                 bootstrap_sha=${bootstrap_darwin_arm64_sha}
+                desired_cosign_filename='cosign-darwin-arm64'
+                # v0.6.0 had different filename structures from all other releases
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0']]; then
+                  desired_cosign_filename='cosign_darwin_arm64_0.6.0_darwin_arm64'
+                fi
                 ;;
               
               *)
@@ -85,6 +110,7 @@ runs:
             exit 1
             ;;
         esac
+        desired_cosign_signature='${desired_cosign_filename}.sig'
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         curl -L https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
@@ -107,11 +133,7 @@ runs:
         fi
 
         # Download custom cosign
-        if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${bootstrap_filename} -o cosign_${{ inputs.cosign-release }}
-        else
-          curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${bootstrap_filename} -o cosign_${{ inputs.cosign-release }}
-        fi
+        curl -L https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(${shaprog} cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
         # same hash means it is the same release
@@ -127,11 +149,8 @@ runs:
                  sudo apt-get update -q
                  sudo apt-get install -yq libpcsclite1
             fi
-            set -e
-            curl -L https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/cosign_linux_amd64_0.6.0_linux_amd64.sig -o ${bootstrap_filename}.sig
-          else
-            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${bootstrap_filename}.sig
           fi
+          curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_signature}
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
@@ -140,7 +159,7 @@ runs:
           fi
 
           set -x
-          ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${bootstrap_filename}.sig cosign_${{ inputs.cosign-release }}
+          ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_signature} cosign_${{ inputs.cosign-release }}
           if [[ $? != 0 ]]; then
             echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}' using release public key"
             exit 1
