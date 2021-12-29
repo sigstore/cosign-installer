@@ -120,9 +120,8 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         echo "INFO: Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed..."
-        set +x
+        echo :      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
         curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
-        set -x
         shaBootstrap=$(${shaprog} cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           echo "ERROR: Unable to validate cosign version: '${{ inputs.cosign-release }}'"
@@ -146,9 +145,8 @@ runs:
 
         # Download custom cosign
         echo "INFO: Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign..."
-        set +x
+        echo"       https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
         curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
-        set -x
         shaCustom=$(${shaprog} cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
         # same hash means it is the same release
@@ -168,13 +166,13 @@ runs:
           fi
 
           echo "INFO: Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign..."
-          set +x
           if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+            echo "      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature}"
             curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
           else
+            echo "      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig"
             curl -sLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
           fi
-          set -x
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
@@ -188,6 +186,8 @@ runs:
           rm cosign
           mv cosign_${{ inputs.cosign-release }} cosign
           chmod +x cosign
-          echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
           echo "INFO: Installation complete!"
         fi
+    - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+      run:  echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
+      shell: bash
