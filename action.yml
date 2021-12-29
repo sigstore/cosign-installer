@@ -120,7 +120,7 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         echo "INFO: Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed..."
-        echo :      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
+        echo "      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
         curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
         shaBootstrap=$(${shaprog} cosign | cut -d' ' -f1);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
@@ -145,7 +145,7 @@ runs:
 
         # Download custom cosign
         echo "INFO: Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign..."
-        echo"       https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
+        echo "      https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
         curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(${shaprog} cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
 
