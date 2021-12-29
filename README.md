@@ -8,6 +8,8 @@ For available `cosign` releases, see https://github.com/sigstore/cosign/releases
 
 ## Usage
 
+This action currently supports both Linux and macOS runners (Windows support coming soon!)
+
 Add the following entry to your Github workflow YAML file:
 
 ```yaml
