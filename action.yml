@@ -45,6 +45,7 @@ runs:
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   desired_cosign_filename='cosign_linux_amd64'
+                  desired_cosign_v060_signature='cosign_linux_amd64_0.6.0_linux_amd64.sig'
                 fi
                 ;;
               
@@ -85,6 +86,7 @@ runs:
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   desired_cosign_filename='cosign_darwin_amd64'
+                  desired_cosign_v060_signature='cosign_darwin_amd64_0.6.0_darwin_amd64.sig'
                 fi
                 ;;
               
@@ -95,6 +97,7 @@ runs:
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   desired_cosign_filename='cosign_darwin_arm64'
+                  desired_cosign_v060_signature='cosign_darwin_arm64_0.6.0_darwin_arm64.sig'
                 fi
                 ;;
               
@@ -149,7 +152,11 @@ runs:
                  sudo apt-get install -yq libpcsclite1
             fi
           fi
-          curl -LO https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
+          if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature}.sig -o ${desired_cosign_filename}.sig
+          else
+            curl -LO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
+          fi
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
