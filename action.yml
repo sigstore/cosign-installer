@@ -25,8 +25,13 @@ runs:
         #!/bin/bash
         # cosign install script
         shopt -s expand_aliases
-        alias log_info="echo -e \"$(tput bold)$(tput setaf 2)INFO$(tput sgr0):\""
-        alias log_error="echo -e \"$(tput bold)$(tput setaf 1}ERROR$(tput sgr0):\""
+        if [ -z "$NO_COLOR" ]; then
+          alias log_info="echo -e \"\033[1;32mINFO\033[0m:\""
+          alias log_error="echo -e \"\033[1;31mERROR\033[0m:\""
+        else
+          alias log_info="echo \"INFO:\""
+          alias log_error="echo \"ERROR:\""
+        fi
         set -e
 
         bootstrap_version='v1.4.1'    
