@@ -28,6 +28,7 @@ runs:
         RED='\e[31m'
         GREEN='\e[32m'
         DEF='\e[0m'
+        shopt -s expand_aliases
         alias log_info="echo -e \"${BOLD}${GREEN}INFO${DEF}:\""
         alias log_error="echo -e \"${BOLD}${RED}ERROR${DEF}:\""
         set -e
