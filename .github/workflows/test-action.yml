@@ -4,7 +4,10 @@ on: [pull_request]
 
 jobs:
   test_cosign_action:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -33,7 +36,11 @@ jobs:
         fi
 
   test_existing_release_action:
-    runs-on: ubuntu-latest
+    # this does not run on macOS as the support for multi-arch was not added yet
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -62,7 +69,10 @@ jobs:
         fi
 
   test_cosign_action_custom:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -93,7 +103,10 @@ jobs:
         fi
 
   test_cosign_action_0_6_0:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -124,7 +137,11 @@ jobs:
         fi
 
   test_cosign_action_0_6_0_with_pre_installed_libpcsclite1_package:
-    runs-on: ubuntu-latest
+    # this test is specifically for linux and pcsclite1 dependencies
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -159,7 +176,10 @@ jobs:
         fi
 
   test_cosign_action_wrong:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -179,8 +199,12 @@ jobs:
       with:
         cosign-release: 'honk'
       continue-on-error: true
+
   test_cosign_action_custom_dir:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
     permissions:
       actions: none
       checks: none
