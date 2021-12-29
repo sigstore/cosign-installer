@@ -36,10 +36,11 @@ jobs:
         fi
 
   test_existing_release_action:
+    # this does not run on macOS as the support for multi-arch was not added yet
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
     permissions:
       actions: none
       checks: none
@@ -136,10 +137,11 @@ jobs:
         fi
 
   test_cosign_action_0_6_0_with_pre_installed_libpcsclite1_package:
+    # this test is specifically for linux and pcsclite1 dependencies
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
     permissions:
       actions: none
       checks: none
