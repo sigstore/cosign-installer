@@ -27,15 +27,6 @@ jobs:
 
     permissions:
       actions: none
-      checks: none
-      contents: none
-      deployments: none
-      issues: none
-      packages: none
-      pull-requests: none
-      repository-projects: none
-      security-events: none
-      statuses: none
 
     name: Install Cosign and test presence in path
     steps:
@@ -56,15 +47,6 @@ jobs:
 
     permissions:
       actions: none
-      checks: none
-      contents: none
-      deployments: none
-      issues: none
-      packages: none
-      pull-requests: none
-      repository-projects: none
-      security-events: none
-      statuses: none
 
     name: Install Cosign and test presence in path
     steps:
@@ -88,16 +70,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      actions: none
-      checks: none
       contents: read
-      deployments: none
-      issues: none
       packages: write
-      pull-requests: none
-      repository-projects: none
-      security-events: none
-      statuses: none
       id-token: write # needed for signing the images with GitHub OIDC Token **not production ready**
 
     name: Install Cosign and test presence in path
