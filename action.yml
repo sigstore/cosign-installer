@@ -19,8 +19,7 @@ runs:
   using: "composite"
   steps:
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
-    - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
-      shell: bash
+    - shell: bash
       run: |
         #!/bin/bash
         # cosign install script
@@ -34,21 +33,39 @@ runs:
         fi
         set -e
 
+        shaprog() {
+          case ${{ runner.os }} in
+            Linux)
+              sha256sum $1 | cut -d' ' -f1
+              ;;
+            macOS)
+              shasum -a256 $1 | cut -d' ' -f1
+              ;;
+            Windows)
+              powershell -command "(Get-FileHash $1 -Algorithm SHA256 | Select-Object -ExpandProperty Hash).ToLower()"
+              ;;
+            *)
+              log_error "unsupported OS ${{ runner.os }}"
+              exit 1
+              ;;
+          esac
+        }
+
         bootstrap_version='v1.4.1'    
         bootstrap_linux_amd64_sha='08ba779a4e6ff827079abed1a6d1f0a0d9e48aea21f520ddeb42ff912f59d268'
         bootstrap_linux_arm_sha='d13f12dea3b65ec4bcd25fe23d35772f7b0b5997dba14947ce242e1260b3a15d'
         bootstrap_linux_arm64_sha='b0c02b607e722b9d2b1807f6efb73042762e77391c51c8948710e7f571ceaa73'
         bootstrap_darwin_amd64_sha='0908ffd3ceea5534c27059e30276094d63ed9339c2bf75e38e3d88d0a34502f3'
         bootstrap_darwin_arm64_sha='f8162aba987e1afddb20a672e47fb070ec6bf1547f65f23159e0f4a61e4ea673'
+        bootstrap_windows_amd64_sha='408557d35b0158590c1978d72cf5079fc299b3f0315f3ece259c6c0f159a079b'
 
-        trap "popd" EXIT
+        trap "popd >/dev/null" EXIT
 
         mkdir -p ${{ inputs.install-dir }}
         pushd ${{ inputs.install-dir }} > /dev/null
 
         case ${{ runner.os }} in
           Linux)
-            shaprog='sha256sum'
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-linux-amd64'
@@ -89,7 +106,6 @@ runs:
             ;;
           
           macOS)
-            shaprog='shasum -a256'
             case ${{ runner.arch }} in
               X64)
                 bootstrap_filename='cosign-darwin-amd64'
@@ -120,6 +136,24 @@ runs:
             esac
             ;;
 
+          Windows)
+            case ${{ runner.arch }} in
+              X64)
+                bootstrap_filename='cosign-windows-amd64.exe'
+                bootstrap_sha=${bootstrap_windows_amd64_sha}
+                desired_cosign_filename='cosign-windows-amd64.exe'
+                # v0.6.0 had different filename structures from all other releases
+                if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
+                  desired_cosign_filename='cosign_windows_amd64.exe'
+                  desired_cosign_v060_signature='cosign_windows_amd64_0.6.0_windows_amd64.exe.sig'
+                fi
+                ;;
+              *)
+                log_error "unsupported architecture $arch"
+                exit 1
+                ;;
+            esac
+            ;;
           *)
             log_error "unsupported architecture $arch"
             exit 1
@@ -129,7 +163,7 @@ runs:
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
         curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
-        shaBootstrap=$(${shaprog} cosign | cut -d' ' -f1);
+        shaBootstrap=$(shaprog cosign);
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           log_error "Unable to validate cosign version: '${{ inputs.cosign-release }}'"
           exit 1
@@ -153,7 +187,7 @@ runs:
         # Download custom cosign
         log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
         curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
-        shaCustom=$(${shaprog} cosign_${{ inputs.cosign-release }} | cut -d' ' -f1);
+        shaCustom=$(shaprog cosign_${{ inputs.cosign-release }});
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]]; then
@@ -197,3 +231,6 @@ runs:
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       run:  echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
       shell: bash
+    - if: ${{ runner.os == 'Windows' }}
+      run:  echo "${{ inputs.install-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      shell: pwsh
