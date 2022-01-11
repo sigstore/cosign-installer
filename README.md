@@ -8,7 +8,7 @@ For available `cosign` releases, see https://github.com/sigstore/cosign/releases
 
 ## Usage
 
-This action currently supports both Linux and macOS runners (Windows support coming soon!)
+This action currently supports GitHub-provided Linux, macOS and Windows runners (self-hosted runners may not work).
 
 Add the following entry to your Github workflow YAML file:
 
