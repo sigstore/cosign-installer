@@ -21,7 +21,7 @@ jobs:
       statuses: none
     name: Install Cosign and test presence in path
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
     - name: Install Cosign
       uses: ./
     - name: Check install!
@@ -55,9 +55,9 @@ jobs:
       statuses: none
     name: Install existing release of Cosign and test presence in path
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
     - name: Install Cosign
-      uses: sigstore/cosign-installer@v1.3.0
+      uses: sigstore/cosign-installer@de5c6db865c272bde755152889dbda79bccb85f7 #v1.3.0
     - name: Check install!
       run: cosign version
     - name: Check root directory
@@ -87,7 +87,7 @@ jobs:
       statuses: none
     name: Install Custom Cosign and test presence in path
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
     - name: Install Cosign
       uses: ./
       with:
@@ -122,7 +122,7 @@ jobs:
       statuses: none
     name: Install Cosign v0.6.0 and test presence in path
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
     - name: Install Cosign
       uses: ./
       with:
@@ -158,7 +158,7 @@ jobs:
       statuses: none
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
     - name: Install libpcsclite1
       run: |
         sudo apt-get update -q
@@ -196,7 +196,7 @@ jobs:
       statuses: none
     name: Try to install a wrong Cosign
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
     - name: Install Cosign
       uses: ./
       with:
@@ -221,7 +221,7 @@ jobs:
       statuses: none
     name: Install Custom Cosign and test presence in path
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 #v2.4.0
       - name: Install Cosign
         uses: ./
         with:
