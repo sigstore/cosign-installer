@@ -32,6 +32,16 @@ runs:
           alias log_error="echo \"ERROR:\""
         fi
         set -e
+        
+        mkdir -p ${{ inputs.install-dir }}
+
+        if [[ ${{ inputs.cosign-release }} == "main" ]]; then
+          log_info "installing cosign via 'go install' from its main version"
+          GOBIN=$(go env GOPATH)/bin
+          go install github.com/sigstore/cosign/cmd/cosign@main
+          ln -s $GOBIN/cosign ${{ inputs.install-dir}}/cosign
+          exit 0
+        fi
 
         shaprog() {
           case ${{ runner.os }} in
@@ -61,7 +71,6 @@ runs:
 
         trap "popd >/dev/null" EXIT
 
-        mkdir -p ${{ inputs.install-dir }}
         pushd ${{ inputs.install-dir }} > /dev/null
 
         case ${{ runner.os }} in

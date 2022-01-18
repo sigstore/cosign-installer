@@ -56,6 +56,32 @@ jobs:
         run: cosign version
 ```
 
+If you want to install cosign from its main version by using 'go install' under the hood, you can set 'cosign-release' as 'main'. Once you did that, cosign will be installed via 'go install' which means that please ensure that go is installed.
+
+Example of installing cosign via go install:
+
+```yaml
+jobs:
+  test_cosign_action:
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: none
+
+    name: Install Cosign via go install
+    steps:
+      - name: Install go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.x'
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: main
+      - name: Check install!
+        run: cosign version
+```
+
 This action does not need any GitHub permission to run, however, if your workflow needs to update, create or perform any
 action against your repository, then you should change the scope of the permission appropriately.
 
