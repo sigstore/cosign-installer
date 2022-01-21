@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v1.4.1'
+    default: 'v1.5.0'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
