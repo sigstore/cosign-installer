@@ -261,8 +261,8 @@ jobs:
       statuses: none
     name: Try to install cosign with go
     steps:
-    - uses: actions/checkout@629c2de402a417ea7690ca6ce3f33229e27606a5 # v2
-    - uses: actions/setup-go@424fc82d43fa5a37540bae62709ddcc23d9520d4 # v2
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
+      - uses: actions/setup-go@424fc82d43fa5a37540bae62709ddcc23d9520d4 # v2
       with:
         go-version: '1.17.x'
     - name: Install Cosign
