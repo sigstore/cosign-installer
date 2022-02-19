@@ -154,5 +154,5 @@ The following optional inputs:
 
 ## Security
 
-Should you discover any security issues, please refer to sigstores [security
-process](https://github.com/sigstore/community/blob/main/SECURITY.md)
+Should you discover any security issues, please refer to sigstore's [security
+process](https://github.com/sigstore/.github/blob/main/SECURITY.md)
