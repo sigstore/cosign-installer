@@ -15,7 +15,7 @@ Add the following entry to your Github workflow YAML file:
 ```yaml
 uses: sigstore/cosign-installer@main
 with:
-  cosign-release: 'v1.5.2' # optional
+  cosign-release: 'v1.6.0' # optional
 ```
 
 Example using a pinned version:
