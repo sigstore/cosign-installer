@@ -1,0 +1,2 @@
+- name: cosign-installer
+  uses: sigstore/cosign-installer@v2.1.0
