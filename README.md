@@ -25,8 +25,7 @@ jobs:
   test_cosign_action:
     runs-on: ubuntu-latest
 
-    permissions:
-      actions: none
+    permissions: {}
 
     name: Install Cosign and test presence in path
     steps:
@@ -45,8 +44,7 @@ jobs:
   test_cosign_action:
     runs-on: ubuntu-latest
 
-    permissions:
-      actions: none
+    permissions: {}
 
     name: Install Cosign and test presence in path
     steps:
@@ -65,8 +63,7 @@ jobs:
   test_cosign_action:
     runs-on: ubuntu-latest
 
-    permissions:
-      actions: none
+    permissions: {}
 
     name: Install Cosign via go install
     steps:
