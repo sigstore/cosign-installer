@@ -11,7 +11,7 @@ jobs:
     permissions: {}
     name: Install Cosign and test presence in path
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 # v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 # v3
     - name: Install Cosign
       uses: ./
     - name: Check install!
@@ -35,7 +35,7 @@ jobs:
     permissions: {}
     name: Install existing release of Cosign and test presence in path
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 #v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 #v3
     - name: Install Cosign
       uses: sigstore/cosign-installer@de5c6db865c272bde755152889dbda79bccb85f7 #v1.3.0
     - name: Check install!
@@ -57,7 +57,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 #v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 #v3
     - name: Install Cosign
       uses: ./
       with:
@@ -82,7 +82,7 @@ jobs:
     permissions: {}
     name: Install Cosign v0.6.0 and test presence in path
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 #v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 #v3
     - name: Install Cosign
       uses: ./
       with:
@@ -108,7 +108,7 @@ jobs:
     permissions: {}
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 #v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 #v3
     - name: Install libpcsclite1
       run: |
         sudo apt-get update -q
@@ -136,7 +136,7 @@ jobs:
     permissions: {}
     name: Try to install a wrong Cosign
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 #v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 #v3
     - name: Install Cosign
       uses: ./
       with:
@@ -151,7 +151,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
-      - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 #v3
+      - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 #v3
       - name: Install Cosign
         uses: ./
         with:
@@ -181,7 +181,7 @@ jobs:
     permissions: {}
     name: Try to install cosign with go
     steps:
-    - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 # v3
+    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 # v3
     - uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v3.0.0
       with:
         go-version: '1.17.x'
