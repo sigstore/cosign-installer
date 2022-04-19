@@ -176,18 +176,18 @@ jobs:
           fi
         shell: bash
 
-  test_cosign_with_go_install:
-    runs-on: ubuntu-latest
-    permissions: {}
-    name: Try to install cosign with go
-    steps:
-    - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 # v3
-    - uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v3.0.0
-      with:
-        go-version: '1.17.x'
-    - name: Install Cosign
-      uses: ./
-      with:
-        cosign-release: 'main'
-    - name: Check install!
-      run: cosign version
+  # test_cosign_with_go_install:
+  #   runs-on: ubuntu-latest
+  #   permissions: {}
+  #   name: Try to install cosign with go
+  #   steps:
+  #   - uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 # v3
+  #   - uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v3.0.0
+  #     with:
+  #       go-version: '1.17.x'
+  #   - name: Install Cosign
+  #     uses: ./
+  #     with:
+  #       cosign-release: 'main'
+  #   - name: Check install!
+  #     run: cosign version
