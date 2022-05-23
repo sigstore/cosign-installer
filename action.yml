@@ -68,6 +68,7 @@ runs:
         bootstrap_darwin_amd64_sha='78ea0bbbbd851c7e7b407c7b784c5857709be5e680be77b44b32d7e716695b41'
         bootstrap_darwin_arm64_sha='50e151ae242e663b51aa109a9d74849f3e235a8b7d33293fb80d784ffceb807f'
         bootstrap_windows_amd64_sha='d274f4baa3ebd11308c8486379759c96071ae58c852078fff0e4952205d92f00'
+        cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
 
@@ -151,6 +152,7 @@ runs:
                 bootstrap_filename='cosign-windows-amd64.exe'
                 bootstrap_sha=${bootstrap_windows_amd64_sha}
                 desired_cosign_filename='cosign-windows-amd64.exe'
+                cosign_executable_name=cosign.exe
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   desired_cosign_filename='cosign_windows_amd64.exe'
@@ -171,13 +173,13 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
-        curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o cosign
-        shaBootstrap=$(shaprog cosign);
+        curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
+        shaBootstrap=$(shaprog ${cosign_executable_name});
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           log_error "Unable to validate cosign version: '${{ inputs.cosign-release }}'"
           exit 1
         fi
-        chmod +x cosign
+        chmod +x ${cosign_executable_name}
 
         # If the bootstrap and specified `cosign` releases are the same, we're done.
         if [[ ${{ inputs.cosign-release }} == ${bootstrap_version} ]]; then
@@ -233,8 +235,8 @@ runs:
           ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
 
           rm cosign
-          mv cosign_${{ inputs.cosign-release }} cosign
-          chmod +x cosign
+          mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}
+          chmod +x ${cosign_executable_name}
           log_info "Installation complete!"
         fi
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
