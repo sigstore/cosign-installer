@@ -160,20 +160,35 @@ jobs:
         run: cosign version
       - name: Check install dir!
         run: |
-          if [[ $(dirname `which cosign`) == "$HOME/.cosigntest" ]]; then
-            exit 0
-          else
-            exit 1
-          fi
+          [[ $(dirname "$(which cosign)") == "$HOME/.cosigntest" ]]
         shell: bash
       - name: Check root directory
         run: |
-          if [[ $(git diff --stat) != '' ]]; then
-            echo 'should be clean'
-            exit 1
-          else
-            exit 0
-          fi
+          [[ -z $(git diff --stat) ]]
+        shell: bash
+
+  test_cosign_action_custom_dir_root:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    permissions: {}
+    name: Install Custom Cosign and test presence in path with custom root dir
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b #v3
+      - name: Install Cosign
+        uses: ./
+        with:
+          install-dir: /usr/bin
+      - name: Check install!
+        run: cosign version
+      - name: Check install dir!
+        run: |
+          [[ $(dirname "$(which cosign)") == /usr/bin ]]
+        shell: bash
+      - name: Check root directory
+        run: |
+          [[ -z $(git diff --stat) ]]
         shell: bash
 
   # test_cosign_with_go_install:

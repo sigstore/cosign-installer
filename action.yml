@@ -171,15 +171,20 @@ runs:
             ;;
         esac
 
+        SUDO=
+        if command -v sudo >/dev/null; then
+            SUDO=sudo
+        fi
+
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
-        curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
+        $SUDO curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
         shaBootstrap=$(shaprog ${cosign_executable_name});
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           log_error "Unable to validate cosign version: '${{ inputs.cosign-release }}'"
           exit 1
         fi
-        chmod +x ${cosign_executable_name}
+        $SUDO chmod +x ${cosign_executable_name}
 
         # If the bootstrap and specified `cosign` releases are the same, we're done.
         if [[ ${{ inputs.cosign-release }} == ${bootstrap_version} ]]; then
@@ -197,7 +202,7 @@ runs:
 
         # Download custom cosign
         log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
-        curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
+        $SUDO curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(shaprog cosign_${{ inputs.cosign-release }});
 
         # same hash means it is the same release
@@ -206,23 +211,23 @@ runs:
             # v0.6.0's linux release has a dependency on `libpcsclite1`
             log_info "Installing libpcsclite1 package if necessary..."
             set +e
-            sudo dpkg -s libpcsclite1
+            $SUDO dpkg -s libpcsclite1
             if [ $? -eq 0 ]; then
                 log_info "libpcsclite1 package is already installed"
             else
                  log_info "libpcsclite1 package is not installed, installing it now."
-                 sudo apt-get update -q -q
-                 sudo apt-get install -yq libpcsclite1
+                 $SUDO apt-get update -q -q
+                 $SUDO apt-get install -yq libpcsclite1
             fi
             set -e
           fi
 
           if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
             log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature}"
-            curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
+            $SUDO curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
           else
             log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig"
-            curl -sLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
+            $SUDO curl -sLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
           fi
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
@@ -234,9 +239,9 @@ runs:
           log_info "Using bootstrap cosign to verify signature of desired cosign version"
           ./cosign verify-blob --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
 
-          rm cosign
-          mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}
-          chmod +x ${cosign_executable_name}
+          $SUDO rm cosign
+          $SUDO mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}
+          $SUDO chmod +x ${cosign_executable_name}
           log_info "Installation complete!"
         fi
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
