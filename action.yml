@@ -15,6 +15,10 @@ inputs:
     description: 'Where to install the cosign binary'
     required: false
     default: '$HOME/.cosign'
+  use-sudo:
+    description: 'set to true if install-dir location requires sudo privs'
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -172,8 +176,8 @@ runs:
         esac
 
         SUDO=
-        if command -v sudo >/dev/null; then
-            SUDO=sudo
+        if "${{ inputs.use-sudo }}" == "true" && command -v sudo >/dev/null; then
+          SUDO=sudo
         fi
 
         expected_bootstrap_version_digest=${bootstrap_sha}
@@ -211,13 +215,13 @@ runs:
             # v0.6.0's linux release has a dependency on `libpcsclite1`
             log_info "Installing libpcsclite1 package if necessary..."
             set +e
-            $SUDO dpkg -s libpcsclite1
+            sudo dpkg -s libpcsclite1
             if [ $? -eq 0 ]; then
                 log_info "libpcsclite1 package is already installed"
             else
                  log_info "libpcsclite1 package is not installed, installing it now."
-                 $SUDO apt-get update -q -q
-                 $SUDO apt-get install -yq libpcsclite1
+                 sudo apt-get update -q -q
+                 sudo apt-get install -yq libpcsclite1
             fi
             set -e
           fi
