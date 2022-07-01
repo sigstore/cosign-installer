@@ -1,6 +1,10 @@
 name: test-cosign
 
-on: [pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
 
 jobs:
   test_cosign_action:
@@ -180,6 +184,7 @@ jobs:
         uses: ./
         with:
           install-dir: /usr/bin
+          use-sudo: true
       - name: Check install!
         run: cosign version
       - name: Check install dir!
