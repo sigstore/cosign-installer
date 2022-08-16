@@ -70,7 +70,7 @@ jobs:
       - name: Install go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.18
           check-latest: true
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
