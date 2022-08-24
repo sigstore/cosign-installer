@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v1.11.0'
+    default: 'v1.11.1'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -65,13 +65,13 @@ runs:
           esac
         }
 
-        bootstrap_version='v1.11.0'
-        bootstrap_linux_amd64_sha='e205253fd34a0107084536bb030b73c1c5230c03ac1af2931b40f2b40b43f6d7'
-        bootstrap_linux_arm_sha='81a27e7fadbbc51a31f74e0354318088768923d1a3f107614785c1c7b0ad4f0c'
-        bootstrap_linux_arm64_sha='178e1e6610ae88e7ebc437946e0fa01282a745065709ecf93f9bb8d8bb53486a'
-        bootstrap_darwin_amd64_sha='6aea1e357418b747d2880c64b17a36a94a35c9d9e561f9876fbbcac7f578c1f9'
-        bootstrap_darwin_arm64_sha='fea422de8f5ef56a1270c5a8b7c21ffa9e01132c3798d50c8bfead580b4484b8'
-        bootstrap_windows_amd64_sha='8cd279e44802f82d4ff833097e8dde4375446cb04ff7ca70ad0f152cc38bc285'
+        bootstrap_version='v1.11.1'
+        bootstrap_linux_amd64_sha='4d9e4a8e79b714039b272ef89ae29bc45b32e585b6010a5b9048da14d93cfd5f'
+        bootstrap_linux_arm_sha='8568c6bcafe0dc230c75654ac2b5d4379a72738df1377b95cd0d48e3f1d7bc1d'
+        bootstrap_linux_arm64_sha='9fb8b494edb4b95caa9b822d2910460e40b16bc90b9477a2af2bcfba0bb9982f'
+        bootstrap_darwin_amd64_sha='a2b5aa3d82cf845c137d3da29aac33557767575967ec8683d673ef6c0116803d'
+        bootstrap_darwin_arm64_sha='d9ec1d1dd722a5cc62ece8ec0832ada0645f48d3d4b8858874d8cad96a15bf2a'
+        bootstrap_windows_amd64_sha='750e1b9e383d5d1f9782176a63121c4f310ad4cbd2262c8fde6fe4086090c164'
         cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
