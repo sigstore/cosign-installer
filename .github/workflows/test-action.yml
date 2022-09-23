@@ -197,14 +197,18 @@ jobs:
         shell: bash
 
   test_cosign_with_go_install:
-    runs-on: ubuntu-latest
     permissions: {}
-    name: Try to install cosign with go
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        go_version: ['1.18', '1.19']
+    name: Try to install cosign with go ${{ matrix.go_version }}
     steps:
     - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
     - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3.3.0
       with:
-        go-version: 1.18
+        go-version: ${{ matrix.go_version }}
         check-latest: true
     - name: Install Cosign
       uses: ./
