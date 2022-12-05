@@ -15,20 +15,20 @@ jobs:
     permissions: {}
     name: Install Cosign and test presence in path
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-    - name: Install Cosign
-      uses: ./
-    - name: Check install!
-      run: cosign version
-    - name: Check root directory
-      run: |
-        if [[ $(git diff --stat) != '' ]]; then
-          echo 'should be clean'
-          exit 1
-        else
-          exit 0
-        fi
-      shell: bash
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - name: Install Cosign
+        uses: ./
+      - name: Check install!
+        run: cosign version
+      - name: Check root directory
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            echo 'should be clean'
+            exit 1
+          else
+            exit 0
+          fi
+        shell: bash
 
   test_existing_release_action:
     # this does not run on macOS as the support for multi-arch was not added yet
@@ -39,19 +39,19 @@ jobs:
     permissions: {}
     name: Install existing release of Cosign and test presence in path
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@de5c6db865c272bde755152889dbda79bccb85f7 #v1.3.0
-    - name: Check install!
-      run: cosign version
-    - name: Check root directory
-      run: |
-        if [[ $(git diff --stat) != '' ]]; then
-          echo 'should be clean'
-          exit 1
-        else
-          exit 0
-        fi
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # v2.8.1
+      - name: Check install!
+        run: cosign version
+      - name: Check root directory
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            echo 'should be clean'
+            exit 1
+          else
+            exit 0
+          fi
 
   test_cosign_action_custom:
     runs-on: ${{ matrix.os }}
@@ -61,22 +61,22 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
-    - name: Install Cosign
-      uses: ./
-      with:
-        cosign-release: 'v1.8.0'
-    - name: Check install!
-      run: cosign version
-    - name: Check root directory
-      run: |
-        if [[ $(git diff --stat) != '' ]]; then
-          echo 'should be clean'
-          exit 1
-        else
-          exit 0
-        fi
-      shell: bash
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - name: Install Cosign
+        uses: ./
+        with:
+          cosign-release: 'v1.8.0'
+      - name: Check install!
+        run: cosign version
+      - name: Check root directory
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            echo 'should be clean'
+            exit 1
+          else
+            exit 0
+          fi
+        shell: bash
 
   test_cosign_action_0_6_0:
     runs-on: ${{ matrix.os }}
@@ -86,22 +86,22 @@ jobs:
     permissions: {}
     name: Install Cosign v0.6.0 and test presence in path
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
-    - name: Install Cosign
-      uses: ./
-      with:
-        cosign-release: 'v0.6.0'
-    - name: Check install!
-      run: cosign version
-    - name: Check root directory
-      run: |
-        if [[ $(git diff --stat) != '' ]]; then
-          echo 'should be clean'
-          exit 1
-        else
-          exit 0
-        fi
-      shell: bash
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - name: Install Cosign
+        uses: ./
+        with:
+          cosign-release: 'v0.6.0'
+      - name: Check install!
+        run: cosign version
+      - name: Check root directory
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            echo 'should be clean'
+            exit 1
+          else
+            exit 0
+          fi
+        shell: bash
 
   test_cosign_action_0_6_0_with_pre_installed_libpcsclite1_package:
     # this test is specifically for linux and pcsclite1 dependencies
@@ -112,25 +112,25 @@ jobs:
     permissions: {}
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
-    - name: Install libpcsclite1
-      run: |
-        sudo apt-get update -q
-        sudo apt-get install -yq libpcsclite1
-    - name: Install Cosign
-      uses: ./
-      with:
-        cosign-release: 'v0.6.0'
-    - name: Check install!
-      run: cosign version
-    - name: Check root directory
-      run: |
-        if [[ $(git diff --stat) != '' ]]; then
-          echo 'should be clean'
-          exit 1
-        else
-          exit 0
-        fi
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - name: Install libpcsclite1
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -yq libpcsclite1
+      - name: Install Cosign
+        uses: ./
+        with:
+          cosign-release: 'v0.6.0'
+      - name: Check install!
+        run: cosign version
+      - name: Check root directory
+        run: |
+          if [[ $(git diff --stat) != '' ]]; then
+            echo 'should be clean'
+            exit 1
+          else
+            exit 0
+          fi
 
   test_cosign_action_wrong:
     runs-on: ${{ matrix.os }}
@@ -140,12 +140,12 @@ jobs:
     permissions: {}
     name: Try to install a wrong Cosign
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
-    - name: Install Cosign
-      uses: ./
-      with:
-        cosign-release: 'honk'
-      continue-on-error: true
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - name: Install Cosign
+        uses: ./
+        with:
+          cosign-release: 'honk'
+        continue-on-error: true
 
   test_cosign_action_custom_dir:
     runs-on: ${{ matrix.os }}
@@ -155,7 +155,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
       - name: Install Cosign
         uses: ./
         with:
@@ -179,7 +179,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path with custom root dir
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 #v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
       - name: Install Cosign
         uses: ./
         with:
@@ -205,14 +205,14 @@ jobs:
         go_version: ['1.18', '1.19']
     name: Try to install cosign with go ${{ matrix.go_version }}
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-    - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3.3.0
-      with:
-        go-version: ${{ matrix.go_version }}
-        check-latest: true
-    - name: Install Cosign
-      uses: ./
-      with:
-        cosign-release: 'main'
-    - name: Check install!
-      run: cosign version
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/setup-go@d0a58c1c4d2b25278816e339b944508c875f3613 # v3.4.0
+        with:
+          go-version: ${{ matrix.go_version }}
+          check-latest: true
+      - name: Install Cosign
+        uses: ./
+        with:
+          cosign-release: 'main'
+      - name: Check install!
+        run: cosign version
