@@ -15,7 +15,7 @@ jobs:
     permissions: {}
     name: Install Cosign and test presence in path
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: ./
       - name: Check install!
@@ -39,7 +39,7 @@ jobs:
     permissions: {}
     name: Install existing release of Cosign and test presence in path
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # v2.8.1
       - name: Check install!
@@ -61,7 +61,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: ./
         with:
@@ -86,7 +86,7 @@ jobs:
     permissions: {}
     name: Install Cosign v0.6.0 and test presence in path
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: ./
         with:
@@ -112,7 +112,7 @@ jobs:
     permissions: {}
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install libpcsclite1
         run: |
           sudo apt-get update -q
@@ -140,7 +140,7 @@ jobs:
     permissions: {}
     name: Try to install a wrong Cosign
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: ./
         with:
@@ -155,7 +155,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: ./
         with:
@@ -179,7 +179,7 @@ jobs:
     permissions: {}
     name: Install Custom Cosign and test presence in path with custom root dir
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - name: Install Cosign
         uses: ./
         with:
@@ -205,7 +205,7 @@ jobs:
         go_version: ['1.18', '1.19']
     name: Try to install cosign with go ${{ matrix.go_version }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
       - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
         with:
           go-version: ${{ matrix.go_version }}
