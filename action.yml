@@ -65,13 +65,13 @@ runs:
           esac
         }
 
-        bootstrap_version='v2.0.0-rc.0'
-        bootstrap_linux_amd64_sha='8c1cee0fb6d49682983feecefa2b54a33a576fe620c9e88c14891355adf33c4d'
-        bootstrap_linux_arm_sha='18ad78a61623a764e01e852dbd6757d9147444a43ad1b1d96c3cd3f603c7127d'
-        bootstrap_linux_arm64_sha='3332e7780817128ac7d8d85db1420376d5aa30816e96c315362f83bf076914e5'
-        bootstrap_darwin_amd64_sha='975910ce3e556d3d52171b658357bfc20675d4abb2bf2a1ef7a4645fef15197c'
-        bootstrap_darwin_arm64_sha='55fb6ef3666b53aac2fdc36c8577f4b3731524bc5de5484e1b4b8ba0ac93f732'
-        bootstrap_windows_amd64_sha='623e6b489250d90ec92ae8f5a098d88d1f82d9c4871d08204bb371431bedddbe'
+        bootstrap_version='v2.0.0'
+        bootstrap_linux_amd64_sha='169a53594c437d53ffc401b911b7e70d453f5a2c1f96eb2a736f34f6356c4f2b'
+        bootstrap_linux_arm_sha='189d56c9946decdaa272e1dccb47ae64009ea39ac0274cfea00507b9acb877c9'
+        bootstrap_linux_arm64_sha='8132cb2fb99a4c60ba8e03b079e12462c27073028a5d08c07ecda67284e0c88d'
+        bootstrap_darwin_amd64_sha='d2c8fc0edb42a1e9745da1c43a2928cee044f3b8a1b8df64088a384c7e6f5b5d'
+        bootstrap_darwin_arm64_sha='9d7821e1c05da4b07513729cb00d1070c9a95332c66d90fa593ed77d8c72ca2a'
+        bootstrap_windows_amd64_sha='e78e7464dc0eda1d6ec063ac2738f4d1418b19dd19f999aa37e1679d5d3af82e'
         cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
@@ -243,7 +243,7 @@ runs:
           fi
 
           log_info "Using bootstrap cosign to verify signature of desired cosign version"
-          ./cosign verify-blob --insecure-skip-tlog-verify --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
+          ./cosign verify-blob --insecure-ignore-tlog --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
 
           $SUDO rm cosign
           $SUDO mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}

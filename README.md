@@ -15,7 +15,7 @@ Add the following entry to your Github workflow YAML file:
 ```yaml
 uses: sigstore/cosign-installer@main
 with:
-  cosign-release: 'v2.0.0-rc.0' # optional
+  cosign-release: 'v2.0.0' # optional
 ```
 
 Example using a pinned version:
@@ -138,7 +138,6 @@ jobs:
         run: cosign sign ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
-          COSIGN_EXPERIMENTAL: true
 ```
 
 ### Optional Inputs
