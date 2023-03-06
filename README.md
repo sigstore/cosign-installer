@@ -135,7 +135,7 @@ jobs:
           COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
 
       - name: Sign the images with GitHub OIDC Token **not production ready**
-        run: cosign sign ${TAGS}
+        run: cosign sign --yes ${TAGS}
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
 ```
