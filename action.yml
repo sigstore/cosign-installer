@@ -105,7 +105,7 @@ runs:
               ARM64)
                 bootstrap_filename='cosign-linux-arm64'
                 bootstrap_sha=${bootstrap_linux_arm64_sha}
-                desired_cosign_filename='cosign-linux-amd64'
+                desired_cosign_filename='cosign-linux-arm64'
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
                   log_error "linux-arm64 build not available at v0.6.0"
                   exit 1
