@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v2.0.0'
+    default: 'v2.0.1'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -65,13 +65,13 @@ runs:
           esac
         }
 
-        bootstrap_version='v2.0.0'
-        bootstrap_linux_amd64_sha='169a53594c437d53ffc401b911b7e70d453f5a2c1f96eb2a736f34f6356c4f2b'
-        bootstrap_linux_arm_sha='189d56c9946decdaa272e1dccb47ae64009ea39ac0274cfea00507b9acb877c9'
-        bootstrap_linux_arm64_sha='8132cb2fb99a4c60ba8e03b079e12462c27073028a5d08c07ecda67284e0c88d'
-        bootstrap_darwin_amd64_sha='d2c8fc0edb42a1e9745da1c43a2928cee044f3b8a1b8df64088a384c7e6f5b5d'
-        bootstrap_darwin_arm64_sha='9d7821e1c05da4b07513729cb00d1070c9a95332c66d90fa593ed77d8c72ca2a'
-        bootstrap_windows_amd64_sha='e78e7464dc0eda1d6ec063ac2738f4d1418b19dd19f999aa37e1679d5d3af82e'
+        bootstrap_version='v2.0.1'
+        bootstrap_linux_amd64_sha='924754b2e62f25683e3e74f90aa5e166944a0f0cf75b4196ee76cb2f487dd980'
+        bootstrap_linux_arm_sha='06815f64ace0ff8e295e4feb9470fdda70b636e2e7f5893432221751bb432a2d'
+        bootstrap_linux_arm64_sha='4a8cd49518cc667bb16e6aaf9da291b647c38baffa462fd495043ae6762f6981'
+        bootstrap_darwin_amd64_sha='a22da39c4e290d3ae5a2a882476daf84b46ac19acd0b01aac8e173d7f57b8eae'
+        bootstrap_darwin_arm64_sha='95774f0f8d0b1674606893e3837ecd3f01d65c0ea4a71409b089307ffd1f9bed'
+        bootstrap_windows_amd64_sha='b34c778c91231d3626290e3d67bd2c7e0994cd846fcd80505fed4f9ce7b78a16'
         cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
@@ -251,8 +251,8 @@ runs:
           log_info "Installation complete!"
         fi
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
-      run:  echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
+      run: echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
       shell: bash
     - if: ${{ runner.os == 'Windows' }}
-      run:  echo "${{ inputs.install-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      run: echo "${{ inputs.install-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       shell: pwsh

@@ -15,7 +15,7 @@ Add the following entry to your Github workflow YAML file:
 ```yaml
 uses: sigstore/cosign-installer@main
 with:
-  cosign-release: 'v2.0.0' # optional
+  cosign-release: 'v2.0.1' # optional
 ```
 
 Example using a pinned version:
@@ -32,7 +32,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: 'v2.0.0-rc.0'
+          cosign-release: 'v2.0.1'
       - name: Check install!
         run: cosign version
 ```
@@ -68,9 +68,9 @@ jobs:
     name: Install Cosign via go install
     steps:
       - name: Install go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.18
+          go-version: '1.20'
           check-latest: true
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
