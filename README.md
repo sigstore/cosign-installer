@@ -134,10 +134,8 @@ jobs:
           COSIGN_PRIVATE_KEY: ${{secrets.COSIGN_PRIVATE_KEY}}
           COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
 
-      - name: Sign the images with GitHub OIDC Token **not production ready**
-        run: cosign sign --yes ${TAGS}
-        env:
-          TAGS: ${{ steps.docker_meta.outputs.tags }}
+      - name: Sign the images with GitHub OIDC Token
+        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
 ```
 
 ### Optional Inputs
@@ -151,5 +149,5 @@ The following optional inputs:
 
 ## Security
 
-Should you discover any security issues, please refer to sigstore's [security
+Should you discover any security issues, please refer to Sigstore's [security
 process](https://github.com/sigstore/.github/blob/main/SECURITY.md)
