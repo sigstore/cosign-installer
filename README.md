@@ -96,7 +96,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write # needed for signing the images with GitHub OIDC Token **not production ready**
+      id-token: write # needed for signing the images with GitHub OIDC Token
 
     name: Install Cosign and test presence in path
     steps:
