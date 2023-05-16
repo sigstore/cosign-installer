@@ -176,7 +176,7 @@ runs:
         esac
 
         SUDO=
-        if "${{ inputs.use-sudo }}" == "true" && command -v sudo >/dev/null; then
+        if [[ "${{ inputs.use-sudo }}" == "true" ]] && command -v sudo >/dev/null; then
           SUDO=sudo
         fi
 
