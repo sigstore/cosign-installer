@@ -87,7 +87,7 @@ runs:
                 desired_cosign_filename='cosign-linux-amd64'
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_linux_amd64'
+                  desired_cosign_filename='cosign_linux_amd64_0.6.0_linux_amd64'
                   desired_cosign_v060_signature='cosign_linux_amd64_0.6.0_linux_amd64.sig'
                 fi
                 ;;
@@ -127,7 +127,7 @@ runs:
                 desired_cosign_filename='cosign-darwin-amd64'
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_darwin_amd64'
+                  desired_cosign_filename='cosign_darwin_amd64_0.6.0_darwin_amd64'
                   desired_cosign_v060_signature='cosign_darwin_amd64_0.6.0_darwin_amd64.sig'
                 fi
                 ;;
@@ -138,7 +138,7 @@ runs:
                 desired_cosign_filename='cosign-darwin-arm64'
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_darwin_arm64'
+                  desired_cosign_filename='cosign_darwin_arm64_0.6.0_darwin_arm64'
                   desired_cosign_v060_signature='cosign_darwin_arm64_0.6.0_darwin_arm64.sig'
                 fi
                 ;;
@@ -159,7 +159,7 @@ runs:
                 cosign_executable_name=cosign.exe
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_windows_amd64.exe'
+                  desired_cosign_filename='cosign_windows_amd64_0.6.0_windows_amd64.exe'
                   desired_cosign_v060_signature='cosign_windows_amd64_0.6.0_windows_amd64.exe.sig'
                 fi
                 ;;
