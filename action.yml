@@ -87,7 +87,7 @@ runs:
                 desired_cosign_filename='cosign-linux-amd64'
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_linux_amd64'
+                  desired_cosign_filename='cosign_linux_amd64_0.6.0_linux_amd64'
                   desired_cosign_v060_signature='cosign_linux_amd64_0.6.0_linux_amd64.sig'
                 fi
                 ;;
@@ -127,7 +127,7 @@ runs:
                 desired_cosign_filename='cosign-darwin-amd64'
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_darwin_amd64'
+                  desired_cosign_filename='cosign_darwin_amd64_0.6.0_darwin_amd64'
                   desired_cosign_v060_signature='cosign_darwin_amd64_0.6.0_darwin_amd64.sig'
                 fi
                 ;;
@@ -138,7 +138,7 @@ runs:
                 desired_cosign_filename='cosign-darwin-arm64'
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_darwin_arm64'
+                  desired_cosign_filename='cosign_darwin_arm64_0.6.0_darwin_arm64'
                   desired_cosign_v060_signature='cosign_darwin_arm64_0.6.0_darwin_arm64.sig'
                 fi
                 ;;
@@ -159,7 +159,7 @@ runs:
                 cosign_executable_name=cosign.exe
                 # v0.6.0 had different filename structures from all other releases
                 if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
-                  desired_cosign_filename='cosign_windows_amd64.exe'
+                  desired_cosign_filename='cosign_windows_amd64_0.6.0_windows_amd64.exe'
                   desired_cosign_v060_signature='cosign_windows_amd64_0.6.0_windows_amd64.exe.sig'
                 fi
                 ;;
@@ -181,8 +181,8 @@ runs:
         fi
 
         expected_bootstrap_version_digest=${bootstrap_sha}
-        log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
-        $SUDO curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
+        log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
+        $SUDO curl -sL https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
         shaBootstrap=$(shaprog ${cosign_executable_name});
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           log_error "Unable to validate cosign version: '${{ inputs.cosign-release }}'"
@@ -205,8 +205,8 @@ runs:
         fi
 
         # Download custom cosign
-        log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
-        $SUDO curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
+        log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}"
+        $SUDO curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(shaprog cosign_${{ inputs.cosign-release }});
 
         # same hash means it is the same release
