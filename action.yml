@@ -172,8 +172,8 @@ runs:
         esac
 
         expected_bootstrap_version_digest=${bootstrap_sha}
-        log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename}"
-        curl -sL https://storage.googleapis.com/cosign-releases/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
+        log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
+        curl -sL https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
         shaBootstrap=$(shaprog ${cosign_executable_name});
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           log_error "Unable to validate cosign version: '${{ inputs.cosign-release }}'"
@@ -196,8 +196,8 @@ runs:
         fi
 
         # Download custom cosign
-        log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename}"
-        curl -sL https://storage.googleapis.com/cosign-releases/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
+        log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}"
+        curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(shaprog cosign_${{ inputs.cosign-release }});
 
         # same hash means it is the same release
