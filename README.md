@@ -140,7 +140,7 @@ jobs:
         env:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
           TAGS: ${{ steps.docker_meta.outputs.tags }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+        run: cosign sign --yes ${TAGS}@${DIGEST}
 ```
 
 ### Optional Inputs
