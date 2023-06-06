@@ -32,7 +32,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.0.5
         with:
-          cosign-release: 'v2.0.0'
+          cosign-release: 'v2.0.2'
       - name: Check install!
         run: cosign version
 ```
