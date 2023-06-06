@@ -13,7 +13,7 @@ This action currently supports GitHub-provided Linux, macOS and Windows runners 
 Add the following entry to your Github workflow YAML file:
 
 ```yaml
-uses: sigstore/cosign-installer@main
+uses: sigstore/cosign-installer@v3.0.5
 with:
   cosign-release: 'v2.0.2' # optional
 ```
@@ -22,15 +22,15 @@ Example using a pinned version:
 
 ```yaml
 jobs:
-  test_cosign_action:
+  example:
     runs-on: ubuntu-latest
 
     permissions: {}
 
-    name: Install Cosign and test presence in path
+    name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v3.0.5
         with:
           cosign-release: 'v2.0.2'
       - name: Check install!
@@ -41,15 +41,15 @@ Example using the default version:
 
 ```yaml
 jobs:
-  test_cosign_action:
+  example:
     runs-on: ubuntu-latest
 
     permissions: {}
 
-    name: Install Cosign and test presence in path
+    name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v3.0.5
       - name: Check install!
         run: cosign version
 ```
@@ -60,7 +60,7 @@ Example of installing cosign via go install:
 
 ```yaml
 jobs:
-  test_cosign_action:
+  example:
     runs-on: ubuntu-latest
 
     permissions: {}
@@ -73,7 +73,7 @@ jobs:
           go-version: '1.20'
           check-latest: true
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v3.0.5
         with:
           cosign-release: main
       - name: Check install!
@@ -90,7 +90,7 @@ Example of a simple workflow:
 
 ```yaml
 jobs:
-  test_cosign_action:
+  build-image:
     runs-on: ubuntu-latest
 
     permissions:
@@ -98,49 +98,56 @@ jobs:
       packages: write
       id-token: write # needed for signing the images with GitHub OIDC Token
 
-    name: Install Cosign and test presence in path
+    name: build-image
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 1
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@v3.0.5
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2.1.0
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2.5.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: docker_meta
-        uses: docker/metadata-action@v3.6.0
+        uses: docker/metadata-action@v4.4.0
         with:
           images: ghcr.io/sigstore/sample-honk
           tags: type=sha,format=long
 
       - name: Build and Push container images
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4.0.0
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
-          labels: ${{ steps.docker_meta.outputs.labels }}
 
       # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
       - name: Sign image with a key
         run: |
-          cosign sign --key env://COSIGN_PRIVATE_KEY ${TAGS}
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${TAGS}@${DIGEST}"
         env:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
-          COSIGN_PRIVATE_KEY: ${{secrets.COSIGN_PRIVATE_KEY}}
-          COSIGN_PASSWORD: ${{secrets.COSIGN_PASSWORD}}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
 
       - name: Sign the images with GitHub OIDC Token
         env:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
           TAGS: ${{ steps.docker_meta.outputs.tags }}
-        run: cosign sign --yes ${TAGS}@${DIGEST}
+        run: cosign sign --yes "${TAGS}@${DIGEST}"
 ```
 
 ### Optional Inputs
