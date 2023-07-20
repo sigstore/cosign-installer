@@ -128,6 +128,7 @@ jobs:
 
       - name: Build and Push container images
         uses: docker/build-push-action@v4.0.0
+        id: build-and-push
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
