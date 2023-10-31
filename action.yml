@@ -81,7 +81,7 @@ runs:
         case ${{ runner.os }} in
           Linux)
             case ${{ runner.arch }} in
-              X64)
+              X64|AMD64)
                 bootstrap_filename='cosign-linux-amd64'
                 bootstrap_sha=${bootstrap_linux_amd64_sha}
                 desired_cosign_filename='cosign-linux-amd64'
@@ -121,7 +121,7 @@ runs:
 
           macOS)
             case ${{ runner.arch }} in
-              X64)
+              X64|AMD64)
                 bootstrap_filename='cosign-darwin-amd64'
                 bootstrap_sha=${bootstrap_darwin_amd64_sha}
                 desired_cosign_filename='cosign-darwin-amd64'
@@ -152,7 +152,7 @@ runs:
 
           Windows)
             case ${{ runner.arch }} in
-              X64)
+              X64|AMD64)
                 bootstrap_filename='cosign-windows-amd64.exe'
                 bootstrap_sha=${bootstrap_windows_amd64_sha}
                 desired_cosign_filename='cosign-windows-amd64.exe'
