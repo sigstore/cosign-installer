@@ -49,13 +49,13 @@ runs:
 
         shaprog() {
           case ${{ runner.os }} in
-            Linux)
+            Linux|linux)
               sha256sum $1 | cut -d' ' -f1
               ;;
-            macOS)
+            macOS|macos)
               shasum -a256 $1 | cut -d' ' -f1
               ;;
-            Windows)
+            Windows|windows)
               powershell -command "(Get-FileHash $1 -Algorithm SHA256 | Select-Object -ExpandProperty Hash).ToLower()"
               ;;
             *)
@@ -79,9 +79,9 @@ runs:
         pushd ${{ inputs.install-dir }} > /dev/null
 
         case ${{ runner.os }} in
-          Linux)
+          Linux|linux)
             case ${{ runner.arch }} in
-              X64)
+              X64|amd64)
                 bootstrap_filename='cosign-linux-amd64'
                 bootstrap_sha=${bootstrap_linux_amd64_sha}
                 desired_cosign_filename='cosign-linux-amd64'
@@ -92,7 +92,7 @@ runs:
                 fi
                 ;;
 
-              ARM)
+              ARM|arm)
                 bootstrap_filename='cosign-linux-arm'
                 bootstrap_sha=${bootstrap_linux_arm_sha}
                 desired_cosign_filename='cosign-linux-arm'
@@ -102,7 +102,7 @@ runs:
                 fi
                 ;;
 
-              ARM64)
+              ARM64|arm64)
                 bootstrap_filename='cosign-linux-arm64'
                 bootstrap_sha=${bootstrap_linux_arm64_sha}
                 desired_cosign_filename='cosign-linux-arm64'
@@ -113,15 +113,15 @@ runs:
                 ;;
 
               *)
-                log_error "unsupported architecture $arch"
+                log_error "unsupported architecture ${{ runner.arch }}"
                 exit 1
                 ;;
             esac
             ;;
 
-          macOS)
+          macOS|macos)
             case ${{ runner.arch }} in
-              X64)
+              X64|amd64)
                 bootstrap_filename='cosign-darwin-amd64'
                 bootstrap_sha=${bootstrap_darwin_amd64_sha}
                 desired_cosign_filename='cosign-darwin-amd64'
@@ -132,7 +132,7 @@ runs:
                 fi
                 ;;
 
-              ARM64)
+              ARM64|arm64)
                 bootstrap_filename='cosign-darwin-arm64'
                 bootstrap_sha=${bootstrap_darwin_arm64_sha}
                 desired_cosign_filename='cosign-darwin-arm64'
@@ -144,15 +144,15 @@ runs:
                 ;;
 
               *)
-                log_error "unsupported architecture $arch"
+                log_error "unsupported architecture ${{ runner.arch }}"
                 exit 1
                 ;;
             esac
             ;;
 
-          Windows)
+          Windows|windows)
             case ${{ runner.arch }} in
-              X64)
+              X64|amd64)
                 bootstrap_filename='cosign-windows-amd64.exe'
                 bootstrap_sha=${bootstrap_windows_amd64_sha}
                 desired_cosign_filename='cosign-windows-amd64.exe'
@@ -164,13 +164,13 @@ runs:
                 fi
                 ;;
               *)
-                log_error "unsupported architecture $arch"
+                log_error "unsupported architecture ${{ runner.arch }}"
                 exit 1
                 ;;
             esac
             ;;
           *)
-            log_error "unsupported architecture $arch"
+            log_error "unsupported os ${{ runner.os }}"
             exit 1
             ;;
         esac
