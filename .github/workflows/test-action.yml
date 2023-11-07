@@ -65,7 +65,7 @@ jobs:
       - name: Install Cosign
         uses: ./
         with:
-          cosign-release: 'v2.1.1'
+          cosign-release: 'v2.2.1'
       - name: Check install!
         run: cosign version
       - name: Check root directory
@@ -206,8 +206,8 @@ jobs:
           - ubuntu-latest
           - windows-latest
         go_version:
-          - '1.19'
           - '1.20'
+          - '1.21'
     name: Try to install cosign with go ${{ matrix.go_version }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
