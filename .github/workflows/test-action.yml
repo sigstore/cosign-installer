@@ -65,7 +65,7 @@ jobs:
       - name: Install Cosign
         uses: ./
         with:
-          cosign-release: 'v2.1.1'
+          cosign-release: 'v2.2.0'
       - name: Check install!
         run: cosign version
       - name: Check root directory

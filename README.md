@@ -32,7 +32,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.1
         with:
-          cosign-release: 'v2.1.1'
+          cosign-release: 'v2.2.1'
       - name: Check install!
         run: cosign version
 ```
@@ -70,7 +70,7 @@ jobs:
       - name: Install go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.21'
           check-latest: true
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.1
