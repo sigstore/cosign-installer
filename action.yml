@@ -182,7 +182,7 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
-        $SUDO curl -sL https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
+        $SUDO curl -fsL https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename} -o ${cosign_executable_name}
         shaBootstrap=$(shaprog ${cosign_executable_name});
         if [[ $shaBootstrap != ${expected_bootstrap_version_digest} ]]; then
           log_error "Unable to validate cosign version: '${{ inputs.cosign-release }}'"
@@ -206,7 +206,7 @@ runs:
 
         # Download custom cosign
         log_info "Downloading platform-specific version '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}"
-        $SUDO curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
+        $SUDO curl -fsL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename} -o cosign_${{ inputs.cosign-release }}
         shaCustom=$(shaprog cosign_${{ inputs.cosign-release }});
 
         # same hash means it is the same release
@@ -228,10 +228,10 @@ runs:
 
           if [[ ${{ inputs.cosign-release }} == 'v0.6.0' ]]; then
             log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature}"
-            $SUDO curl -sL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
+            $SUDO curl -fsL https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_v060_signature} -o ${desired_cosign_filename}.sig
           else
             log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig"
-            $SUDO curl -sLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
+            $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
           fi
 
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
@@ -245,7 +245,7 @@ runs:
           fi
 
           log_info "Verifying public key matches expected value"
-          $SUDO curl -sL $RELEASE_COSIGN_PUB_KEY -o public.key
+          $SUDO curl -fsL $RELEASE_COSIGN_PUB_KEY -o public.key
           sha_fetched_key=$(shaprog public.key)
           if [[ $sha_fetched_key != $RELEASE_COSIGN_PUB_KEY_SHA ]]; then
             log_error "Fetched public key does not match expected digest, exiting"
