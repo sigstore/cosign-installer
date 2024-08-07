@@ -237,13 +237,23 @@ runs:
           if [[ ${{ inputs.cosign-release }} < 'v0.6.0' ]]; then
             log_info "Downloading cosign public key '${{ inputs.cosign-release }}' of cosign...\n    https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub"
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/.github/workflows/cosign.pub
+            RELEASE_COSIGN_PUB_KEY_SHA='4aa4bd19530a4929d758a9896255aef2c82f1a3a9f4b000034c6df4307c14f9e'
           else
             log_info "Downloading cosign public key '${{ inputs.cosign-release }}' of cosign...\n    https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub"
             RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
+            RELEASE_COSIGN_PUB_KEY_SHA='f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126'
+          fi
+
+          log_info "Verifying public key matches expected value"
+          $SUDO curl -sL $RELEASE_COSIGN_PUB_KEY -o public.key
+          sha_fetched_key=$(shaprog public.key)
+          if [[ $sha_fetched_key != $RELEASE_COSIGN_PUB_KEY_SHA ]]; then
+            log_error "Fetched public key does not match expected digest, exiting"
+            exit 1
           fi
 
           log_info "Using bootstrap cosign to verify signature of desired cosign version"
-          ./cosign verify-blob --insecure-ignore-tlog --key $RELEASE_COSIGN_PUB_KEY --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
+          ./cosign verify-blob --insecure-ignore-tlog --key public.key --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
 
           $SUDO rm cosign
           $SUDO mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}
