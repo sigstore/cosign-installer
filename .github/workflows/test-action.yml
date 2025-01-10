@@ -79,7 +79,7 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         cosign_release: ${{ fromJson(needs.get_all_cosign_releases.outputs.releases) }}
     permissions: {}
-    name: Install Custom Cosign and test presence in path
+    name: "Install Cosign ${{ matrix.cosign_release }} on ${{ matrix.os }} and test presence in path"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install Cosign
