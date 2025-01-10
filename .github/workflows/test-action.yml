@@ -20,7 +20,7 @@ jobs:
         with:
           retries: 3
           script: |
-            const response = await github.rest.repos.listReleases({'sigstore','cosign'});
+            const response = await github.rest.repos.listReleases({owner:'sigstore',repo:'cosign'});
             return response.data.map(release => release.tag_name);
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
