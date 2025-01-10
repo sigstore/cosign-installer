@@ -253,7 +253,7 @@ runs:
           fi
 
           log_info "Using bootstrap cosign to verify signature of desired cosign version"
-          ./cosign verify-blob --insecure-ignore-tlog --key public.key --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
+          ./cosign verify-blob --key public.key --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
 
           $SUDO rm cosign
           $SUDO mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}

@@ -7,7 +7,25 @@ on:
       - 'main'
 
 jobs:
-  test_cosign_action:
+  get_all_cosign_releases:
+    runs-on: ubuntu-latest
+    permissions: {}
+    name: Fetch current list of all Cosign releases for testing
+    outputs:
+      releases: ${{ steps.get_tags.outputs.result }}
+    steps:
+      - name: Get release tags
+        id: get_tags
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          retries: 3
+          script: |
+            const response = await github.rest.repos.listReleases({'sigstore','cosign'});
+            return response.data.map(release => release.tag_name);
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test_default_version_cosign_action:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -55,9 +73,11 @@ jobs:
 
   test_cosign_action_custom:
     runs-on: ${{ matrix.os }}
+    needs: get_all_cosign_releases
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
+        cosign_release: ${{ fromJson(needs.get_all_cosign_releases.outputs.releases) }}
     permissions: {}
     name: Install Custom Cosign and test presence in path
     steps:
@@ -65,7 +85,7 @@ jobs:
       - name: Install Cosign
         uses: ./
         with:
-          cosign-release: 'v2.2.3'
+          cosign-release: ${{ matrix.cosign_release }}
       - name: Check install!
         run: cosign version
       - name: Check root directory
