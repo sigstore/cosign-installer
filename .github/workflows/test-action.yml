@@ -7,15 +7,38 @@ on:
       - 'main'
 
 jobs:
-  test_cosign_action:
+  get_all_cosign_releases:
+    runs-on: ubuntu-latest
+    permissions: {}
+    name: Fetch current list of all Cosign releases for testing
+    outputs:
+      releases: ${{ steps.get_tags.outputs.result }}
+    steps:
+      - name: Get release tags
+        id: get_tags
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          retries: 3
+          script: |
+            const response = await github.rest.repos.listReleases({owner:'sigstore',repo:'cosign'});
+            const releases = response.data.map(release => release.tag_name);
+            console.log("Found releases: " + releases);
+            // omits 0.5.0 and 0.6.0 releases because they are tested separately
+            return releases.filter(rel => !['0.5.0', '0.6.0'].includes(rel));
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test_default_version_cosign_action:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     permissions: {}
-    name: Install Cosign and test presence in path
+    name: Install default version Cosign and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
       - name: Check install!
@@ -40,6 +63,8 @@ jobs:
     name: Install existing release of Cosign and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: sigstore/cosign-installer@dd6b2e2b610a11fd73dd187a43d57cc1394e35f9 # v3.0.5
       - name: Check install!
@@ -55,17 +80,21 @@ jobs:
 
   test_cosign_action_custom:
     runs-on: ${{ matrix.os }}
+    needs: get_all_cosign_releases
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
+        cosign_release: ${{ fromJson(needs.get_all_cosign_releases.outputs.releases) }}
     permissions: {}
-    name: Install Custom Cosign and test presence in path
+    name: Install Cosign ${{ matrix.cosign_release }} on ${{ matrix.os }} and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
         with:
-          cosign-release: 'v2.2.3'
+          cosign-release: ${{ matrix.cosign_release }}
       - name: Check install!
         run: cosign version
       - name: Check root directory
@@ -87,6 +116,8 @@ jobs:
     name: Install Cosign v0.5.0 and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
         with:
@@ -112,6 +143,8 @@ jobs:
     name: Install Cosign v0.6.0 and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
         with:
@@ -138,6 +171,8 @@ jobs:
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install libpcsclite1
         run: |
           sudo apt-get update -q
@@ -166,6 +201,8 @@ jobs:
     name: Try to install a wrong Cosign
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
         with:
@@ -181,6 +218,8 @@ jobs:
     name: Install Custom Cosign and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
         with:
@@ -205,6 +244,8 @@ jobs:
     name: Install Custom Cosign and test presence in path with custom root dir
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Install Cosign
         uses: ./
         with:
@@ -231,11 +272,13 @@ jobs:
           - ubuntu-latest
           - windows-latest
         go_version:
-          - '1.21'
           - '1.22'
-    name: Try to install cosign with go ${{ matrix.go_version }}
+          - '1.23'
+    name: Try to install cosign with go ${{ matrix.go_version }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
           go-version: ${{ matrix.go_version }}
