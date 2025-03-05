@@ -14,7 +14,7 @@ inputs:
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
-    default: '$HOME/.cosign'
+    # default: '$HOME/.cosign'
   use-sudo:
     description: 'set to true if install-dir location requires sudo privs'
     required: false
@@ -37,13 +37,29 @@ runs:
         fi
         set -e
 
-        mkdir -p ${{ inputs.install-dir }}
+        export install_dir="${{ inputs.install-dir }}"
+
+        if [[ ! -d "$RUNNER_TOOL_CACHE" ]]; then
+          echo "Cache directory '$RUNNER_TOOL_CACHE' does not exist" >&2
+          exit 1
+        fi
+
+        if [[ -z "${{ inputs.install-dir }}" ]]; then
+          export install_dir="$RUNNER_TOOL_CACHE/cosign/${{ inputs.cosign-release }}/${{ runner.arch }}"
+
+          if command -v "$install_dir/cosign" &> /dev/null; then
+              echo "Found Cosign in the cache $RUNNER_TOOL_CACHE"
+              exit 0
+          fi
+        fi
+
+        mkdir -p "$install_dir"
 
         if [[ ${{ inputs.cosign-release }} == "main" ]]; then
           log_info "installing cosign via 'go install' from its main version"
           GOBIN=$(go env GOPATH)/bin
           go install github.com/sigstore/cosign/cmd/cosign@main
-          ln -s $GOBIN/cosign ${{ inputs.install-dir}}/cosign
+          ln -s $GOBIN/cosign $install_dir/cosign
           exit 0
         fi
 
@@ -76,7 +92,7 @@ runs:
 
         trap "popd >/dev/null" EXIT
 
-        pushd ${{ inputs.install-dir }} > /dev/null
+        pushd $install_dir > /dev/null
 
         case ${{ runner.os }} in
           Linux|linux)
@@ -261,8 +277,19 @@ runs:
           log_info "Installation complete!"
         fi
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
-      run: echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
       shell: bash
+      run: |
+        if [[ -z "${{ inputs.install-dir }}" ]]; then
+          echo "$RUNNER_TOOL_CACHE/cosign/${{ inputs.cosign-release }}/${{ runner.arch }}" >> $GITHUB_PATH
+        else
+          echo "${{ inputs.install-dir }}" >> $GITHUB_PATH
+        fi
+
     - if: ${{ runner.os == 'Windows' }}
-      run: echo "${{ inputs.install-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       shell: pwsh
+      run: |
+        if ([string]::IsNullOrEmpty("${{ inputs.install-dir }}")) {
+          "$ENV:RUNNER_TOOL_CACHE\cosign\${{ inputs.cosign-release }}\${{ runner.arch }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        } else {
+          echo "${{ inputs.install-dir }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        }
