@@ -53,6 +53,27 @@ jobs:
           fi
         shell: bash
 
+  test_cached_tool:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    permissions: {}
+    name: test if cosign is in the cache
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install Cosign
+        uses: ./
+      - name: Check install!
+        shell: bash
+        run: |
+          cosign version
+          ls -la $RUNNER_TOOL_CACHE
+      - name: Install Cosign again
+        uses: ./
+
   test_existing_release_action:
     # this does not run on macOS as the support for multi-arch was not added yet
     runs-on: ${{ matrix.os }}
