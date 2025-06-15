@@ -37,12 +37,20 @@ runs:
         fi
         set -e
 
-        # Check for unsupported old versions
-        if [[ "${{ inputs.cosign-release }}" == "v0.5.0" || "${{ inputs.cosign-release }}" == "v0.6.0" ]]; then
-          log_error "cosign versions v0.5.0 and v0.6.0 are no longer supported."
-          log_error "Please use cosign v2.4.0 or later."
-          log_error "See https://github.com/sigstore/cosign/releases for available versions."
-          exit 1
+        # Check for unsupported old versions (anything below v2.0.0)
+        if [[ "${{ inputs.cosign-release }}" != "main" ]]; then
+          # Extract version without 'v' prefix for comparison
+          version_num="${{ inputs.cosign-release }}"
+          version_num="${version_num#v}"
+
+          # Check if version is less than v2.0.0
+          if [[ "$version_num" =~ ^[01]\. ]] || [[ "$version_num" =~ ^0\. ]]; then
+            log_error "cosign versions below v2.0.0 are no longer supported."
+            log_error "Requested version: ${{ inputs.cosign-release }}"
+            log_error "Please use cosign v2.4.0 or later."
+            log_error "See https://github.com/sigstore/cosign/releases for available versions."
+            exit 1
+          fi
         fi
 
         mkdir -p ${{ inputs.install-dir }}
