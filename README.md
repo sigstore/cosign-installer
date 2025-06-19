@@ -169,6 +169,12 @@ The following optional inputs:
 | `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). |
 | `use-sudo` | set to `true` if `install-dir` location requires sudo privs. Defaults to false. |
 
+### Outputs
+
+| Input | Description |
+| --- | --- |
+| `cache-hit` | Whether `cosign` was found in cache and installation was skipped. |
+
 ## Security
 
 Should you discover any security issues, please refer to Sigstore's [security

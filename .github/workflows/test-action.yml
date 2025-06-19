@@ -53,6 +53,59 @@ jobs:
           fi
         shell: bash
 
+  test_cached_tool:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    permissions: {}
+    name: test if cosign is in the cache
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install Cosign first time
+        id: install-first
+        uses: ./
+        with:
+          cosign-release: 'v2.4.3'
+      - name: Check cache structure and first install output
+        shell: bash
+        run: |
+          echo "First install cache-hit output: ${{ steps.install-first.outputs.cache-hit }}"
+          if [[ "${{ steps.install-first.outputs.cache-hit }}" == "false" ]]; then
+            echo "✅ First install correctly reported cache-hit=false"
+          else
+            echo "❌ First install should have cache-hit=false"
+            exit 1
+          fi
+          echo "Checking cache after first install..."
+          ls -la $RUNNER_TOOL_CACHE/cosign/
+          ls -la $RUNNER_TOOL_CACHE/cosign/v2.4.3/
+          if [[ -f "$RUNNER_TOOL_CACHE/cosign/v2.4.3/${{ runner.arch }}/cosign" ]]; then
+            echo "✅ Cosign binary cached successfully"
+          else
+            echo "❌ Cosign binary not found in cache"
+            exit 1
+          fi
+      - name: Install Cosign again (should use cache)
+        id: install-second
+        uses: ./
+        with:
+          cosign-release: 'v2.4.3'
+      - name: Verify cache was used
+        shell: bash
+        run: |
+          echo "Second install cache-hit output: ${{ steps.install-second.outputs.cache-hit }}"
+          if [[ "${{ steps.install-second.outputs.cache-hit }}" == "true" ]]; then
+            echo "✅ Second install correctly used cache (cache-hit=true)"
+          else
+            echo "❌ Second install should have used cache (cache-hit=true)"
+            exit 1
+          fi
+          echo "Verifying cosign still works after cache hit..."
+          cosign version
+
   test_existing_release_action:
     # this does not run on macOS as the support for multi-arch was not added yet
     runs-on: ${{ matrix.os }}
@@ -289,3 +342,60 @@ jobs:
           cosign-release: 'main'
       - name: Check install!
         run: cosign version
+
+  test_cached_go_install:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+
+    name: Test caching for go install cosign on ${{ matrix.os }} with go ${{ matrix.go_version }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version: '1.24'
+          check-latest: true
+      - name: Install Cosign with go install (first time)
+        id: install-go-first
+        uses: ./
+        with:
+          cosign-release: 'main'
+      - name: Check cache structure and first go install output
+        shell: bash
+        run: |
+          echo "First go install cache-hit output: ${{ steps.install-go-first.outputs.cache-hit }}"
+          if [[ "${{ steps.install-go-first.outputs.cache-hit }}" == "false" ]]; then
+            echo "✅ First go install correctly reported cache-hit=false"
+          else
+            echo "❌ First go install should have cache-hit=false"
+            exit 1
+          fi
+          echo "Checking cache after first go install..."
+          ls -la $RUNNER_TOOL_CACHE/cosign/
+          ls -la $RUNNER_TOOL_CACHE/cosign/main/
+          # Verify binary exists in expected location
+          if [[ -f "$RUNNER_TOOL_CACHE/cosign/main/${{ runner.arch }}/cosign" ]]; then
+            echo "✅ Go-installed cosign binary cached successfully"
+          else
+            echo "❌ Go-installed cosign binary not found in cache"
+            exit 1
+          fi
+      - name: Install Cosign with go install again (should use cache)
+        id: install-go-second
+        uses: ./
+        with:
+          cosign-release: 'main'
+      - name: Verify go install cache was used
+        shell: bash
+        run: |
+          echo "Second go install cache-hit output: ${{ steps.install-go-second.outputs.cache-hit }}"
+          if [[ "${{ steps.install-go-second.outputs.cache-hit }}" == "true" ]]; then
+            echo "✅ Second go install correctly used cache (cache-hit=true)"
+          else
+            echo "❌ Second go install should have used cache (cache-hit=true)"
+            exit 1
+          fi
+          echo "Verifying cosign still works after go install cache hit..."
+          cosign version
