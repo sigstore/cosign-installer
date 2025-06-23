@@ -13,9 +13,9 @@ This action currently supports GitHub-provided Linux, macOS and Windows runners 
 Add the following entry to your Github workflow YAML file:
 
 ```yaml
-uses: sigstore/cosign-installer@v3.9.0
+uses: sigstore/cosign-installer@v3.9.1
 with:
-  cosign-release: 'v2.5.1' # optional
+  cosign-release: 'v2.5.2' # optional
 ```
 
 Example using a pinned version:
@@ -30,9 +30,9 @@ jobs:
     name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.0
+        uses: sigstore/cosign-installer@v3.9.1
         with:
-          cosign-release: 'v2.5.1'
+          cosign-release: 'v2.5.2'
       - name: Check install!
         run: cosign version
 ```
@@ -49,7 +49,7 @@ jobs:
     name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.0
+        uses: sigstore/cosign-installer@v3.9.1
       - name: Check install!
         run: cosign version
 ```
@@ -68,12 +68,12 @@ jobs:
     name: Install Cosign via go install
     steps:
       - name: Install go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v5.5.0
         with:
           go-version: '1.24'
           check-latest: true
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.8.1
+        uses: sigstore/cosign-installer@v3.9.1
         with:
           cosign-release: main
       - name: Check install!
@@ -105,29 +105,29 @@ jobs:
           fetch-depth: 1
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.0
+        uses: sigstore/cosign-installer@v3.9.1
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.4.0
+        uses: docker/setup-qemu-action@v3.6.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.9.0
+        uses: docker/setup-buildx-action@v3.11.1
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.3.0
+        uses: docker/login-action@v3.4.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - id: docker_meta
-        uses: docker/metadata-action@v5.6.1
+        uses: docker/metadata-action@v5.7.0
         with:
           images: ghcr.io/sigstore/sample-honk
           tags: type=sha,format=long
 
       - name: Build and Push container images
-        uses: docker/build-push-action@v6.14.0
+        uses: docker/build-push-action@v6.18.0
         id: build-and-push
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64
