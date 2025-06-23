@@ -6,10 +6,13 @@ on:
     branches:
       - 'main'
 
+permissions: {}
+
 jobs:
   get_all_cosign_releases:
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      contents: read
     name: Fetch current list of all Cosign releases for testing
     outputs:
       releases: ${{ steps.get_tags.outputs.result }}
@@ -33,7 +36,8 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install default version Cosign and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -57,9 +61,11 @@ jobs:
     # this does not run on macOS as the support for multi-arch was not added yet
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install existing release of Cosign and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -82,10 +88,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: get_all_cosign_releases
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         cosign_release: ${{ fromJson(needs.get_all_cosign_releases.outputs.releases) }}
-    permissions: {}
+    permissions:
+      contents: read
     name: Install Cosign ${{ matrix.cosign_release }} on ${{ matrix.os }} and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -110,9 +118,11 @@ jobs:
   test_cosign_action_0_5_0:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install Cosign v0.5.0 and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -137,9 +147,11 @@ jobs:
   test_cosign_action_0_6_0:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install Cosign v0.6.0 and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -165,9 +177,11 @@ jobs:
     # this test is specifically for linux and pcsclite1 dependencies
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install Cosign v0.6.0 and test presence in path with pre installed libpcsclite1 package
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -195,9 +209,11 @@ jobs:
   test_cosign_action_wrong:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Try to install a wrong Cosign
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -212,9 +228,11 @@ jobs:
   test_cosign_action_custom_dir:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install Custom Cosign and test presence in path
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -238,9 +256,11 @@ jobs:
   test_cosign_action_custom_dir_root:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-    permissions: {}
+    permissions:
+      contents: read
     name: Install Custom Cosign and test presence in path with custom root dir
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -263,9 +283,11 @@ jobs:
         shell: bash
 
   test_cosign_with_go_install:
-    permissions: {}
+    permissions:
+      contents: read
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-latest
