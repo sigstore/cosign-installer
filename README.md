@@ -13,9 +13,9 @@ This action currently supports GitHub-provided Linux, macOS and Windows runners 
 Add the following entry to your Github workflow YAML file:
 
 ```yaml
-uses: sigstore/cosign-installer@v3.9.1
+uses: sigstore/cosign-installer@v3.9.2
 with:
-  cosign-release: 'v2.5.2' # optional
+  cosign-release: 'v2.5.3' # optional
 ```
 
 Example using a pinned version:
@@ -30,9 +30,9 @@ jobs:
     name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
         with:
-          cosign-release: 'v2.5.2'
+          cosign-release: 'v2.5.3'
       - name: Check install!
         run: cosign version
 ```
@@ -49,7 +49,7 @@ jobs:
     name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
       - name: Check install!
         run: cosign version
 ```
@@ -73,7 +73,7 @@ jobs:
           go-version: '1.24'
           check-latest: true
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
         with:
           cosign-release: main
       - name: Check install!
@@ -105,7 +105,7 @@ jobs:
           fetch-depth: 1
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.9.1
+        uses: sigstore/cosign-installer@v3.9.2
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.6.0
