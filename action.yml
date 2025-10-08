@@ -211,8 +211,7 @@ runs:
             exit 1
           fi
 
-          version_num_for_v3_check="${{ inputs.cosign-release#v }}"
-          if [[ "$(printf '%s\n' "3.0.0" "$version_num_for_v3_check" | sort -V | head -n1)" == "3.0.0" ]]; then
+          if [[ "$(printf '%s\n' "3.0.0" "$version_num" | sort -V | head -n1)" == "3.0.0" ]]; then
             # we're trying to get something greater than or equal to v3.0.0
             signature_file=${desired_cosign_filename}.sigstore.json
             log_info "Downloading verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}"
