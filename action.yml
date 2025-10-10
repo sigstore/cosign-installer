@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v2.6.0'
+    default: 'v3.0.2'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -81,13 +81,13 @@ runs:
           esac
         }
 
-        bootstrap_version='v3.0.1'
-        bootstrap_linux_amd64_sha='23c9ff889672f03676b673539de07d5ad4e8efc8247a3ad55c9bc00169aa2305'
-        bootstrap_linux_arm_sha='0adab06dd7c86db73ba98610dfc0e6c1282fa4f90977ae49d82e644c112bc258'
-        bootstrap_linux_arm64_sha='8f5bb6899118d521d7b12252f06d5808fba4e6cb0a23ff120ed6c14d7c87863a'
-        bootstrap_darwin_amd64_sha='260c174b80d6401a7d2703109eb32f6a0bdbddd2ac91d3268dc96a51238d96ab'
-        bootstrap_darwin_arm64_sha='dad2a161d91fba199d1ebae7e5652a4c2dd412cbb1ab6b4cc8ad6a15378319fe'
-        bootstrap_windows_amd64_sha='21843dbb2e910097531ca23e9f87d0ca2ae9a412e056009eae670b090418e8ed'
+        bootstrap_version='v3.0.2'
+        bootstrap_linux_amd64_sha='46dbdcb5467a3dfec2526923d0b3365e40c8d9dc00ec23d5aca3437449e8cbfd'
+        bootstrap_linux_arm_sha='067df248315ee0c4af1cedb1cce65ad826f784be11ef88afd8d36e87c07162b6'
+        bootstrap_linux_arm64_sha='17fd784737ca54d7d8a343c82da6c5d6dbdee971e66644d923d1b057fb97d7ed'
+        bootstrap_darwin_amd64_sha='0fc2b6f16b900abdfda3153b11fc435a8cbe3830e8e820fe8ad5fe4149a5b472'
+        bootstrap_darwin_arm64_sha='3823b044de184da21e300bc5e20dd29d3fa9243af3ba70c4a5da1712f3385d46'
+        bootstrap_windows_amd64_sha='7a137280d8686665ceb4d8565df2a0ac63f28031e014cdcae5d56891a6c8a400'
         cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
@@ -199,27 +199,37 @@ runs:
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]]; then
+          log_info "Downloading cosign public key '${{ inputs.cosign-release }}' of cosign...\n    https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub"
+          RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
+          RELEASE_COSIGN_PUB_KEY_SHA='f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126'
+
+          log_info "Verifying public key matches expected value"
+          $SUDO curl -fsL $RELEASE_COSIGN_PUB_KEY -o public.key
+          sha_fetched_key=$(shaprog public.key)
+          if [[ $sha_fetched_key != $RELEASE_COSIGN_PUB_KEY_SHA ]]; then
+            log_error "Fetched public key does not match expected digest, exiting"
+            exit 1
+          fi
+
           if [[ "$(printf '%s\n' "3.0.0" "$version_num" | sort -V | head -n1)" == "3.0.0" ]]; then
             # we're trying to get something greater than or equal to v3.0.0
-            signature_file=${desired_cosign_filename}.sigstore.json
-            log_info "Downloading verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}"
-            $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}
+            keyless_signature_file=${desired_cosign_filename}.sigstore.json
+            log_info "Downloading keyless verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}"
+            $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}
 
-            log_info "Using bootstrap cosign to verify signature of desired cosign version"
-            ./cosign verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle ${signature_file} cosign_${{ inputs.cosign-release }}
-          else
-            log_info "Downloading cosign public key '${{ inputs.cosign-release }}' of cosign...\n    https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub"
-            RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
-            RELEASE_COSIGN_PUB_KEY_SHA='f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126'
+            log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
+            ./cosign verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle ${keyless_signature_file} cosign_${{ inputs.cosign-release }}
 
-            log_info "Verifying public key matches expected value"
-            $SUDO curl -fsL $RELEASE_COSIGN_PUB_KEY -o public.key
-            sha_fetched_key=$(shaprog public.key)
-            if [[ $sha_fetched_key != $RELEASE_COSIGN_PUB_KEY_SHA ]]; then
-              log_error "Fetched public key does not match expected digest, exiting"
-              exit 1
+            if [[ "$(printf '%s\n' "3.0.2" "$version_num" | sort -V | head -n1)" == "3.0.2" ]]; then
+              # we're trying to get something greater than or equal to v3.0.2
+              kms_signature_file=${desired_cosign_filename}-kms.sigstore.json
+              log_info "Downloading KMS verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${kms_signature_file}"
+              $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${kms_signature_file}
+
+              log_info "Using bootstrap cosign to verify signature of desired cosign version"
+              ./cosign verify-blob --key public.key --bundle ${kms_signature_file} cosign_${{ inputs.cosign-release }}
             fi
-
+          else
             signature_file=${desired_cosign_filename}.sig
             log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}"
             $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}
