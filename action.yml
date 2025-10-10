@@ -37,6 +37,13 @@ runs:
         fi
         set -e
 
+        # This function helps compare versions.
+        # Returns 0 if version1 >= version2, 1 otherwise.
+        # Usage: is_version_ge "3.0.0" "$version_num"
+        is_version_ge() {
+            [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" == "$1" ]
+        }
+
         # Check for unsupported old versions (anything below v2.0.0)
         if [[ "${{ inputs.cosign-release }}" != "main" ]]; then
           # Extract version without 'v' prefix for comparison
@@ -44,7 +51,7 @@ runs:
           version_num="${version_num#v}"
 
           # Check if version is less than v2.0.0
-          if [[ "$version_num" =~ ^[01]\. ]] || [[ "$version_num" =~ ^0\. ]]; then
+          if ! is_version_ge "2.0.0" "$version_num"; then
             log_error "cosign versions below v2.0.0 are no longer supported."
             log_error "Requested version: ${{ inputs.cosign-release }}"
             log_error "Please use cosign v2.4.0 or later."
@@ -211,8 +218,8 @@ runs:
             exit 1
           fi
 
-          if [[ "$(printf '%s\n' "3.0.0" "$version_num" | sort -V | head -n1)" == "3.0.0" ]]; then
-            # we're trying to get something greater than or equal to v3.0.0
+          if is_version_ge "3.0.1" "$version_num"; then
+            # we're trying to get something greater than or equal to v3.0.1
             keyless_signature_file=${desired_cosign_filename}.sigstore.json
             log_info "Downloading keyless verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}"
             $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}
@@ -220,7 +227,7 @@ runs:
             log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
             ./cosign verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle ${keyless_signature_file} cosign_${{ inputs.cosign-release }}
 
-            if [[ "$(printf '%s\n' "3.0.2" "$version_num" | sort -V | head -n1)" == "3.0.2" ]]; then
+            if is_version_ge "3.0.2" "$version_num"; then
               # we're trying to get something greater than or equal to v3.0.2
               kms_signature_file=${desired_cosign_filename}-kms.sigstore.json
               log_info "Downloading KMS verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${kms_signature_file}"
