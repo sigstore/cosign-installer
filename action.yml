@@ -205,7 +205,7 @@ runs:
         shaCustom=$(shaprog cosign_${{ inputs.cosign-release }});
 
         # same hash means it is the same release
-        if [[ $shaCustom != $shaBootstrap ]]; then
+        if true; then #[[ $shaCustom != $shaBootstrap ]]; then
           log_info "Downloading cosign public key '${{ inputs.cosign-release }}' of cosign...\n    https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub"
           RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           RELEASE_COSIGN_PUB_KEY_SHA='f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126'
