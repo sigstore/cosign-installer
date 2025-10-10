@@ -188,7 +188,7 @@ runs:
         # If the bootstrap and specified `cosign` releases are the same, we're done.
         if [[ ${{ inputs.cosign-release }} == ${bootstrap_version} ]]; then
           log_info "bootstrap version successfully verified and matches requested version so nothing else to do"
-          exit 0
+          #exit 0
         fi
 
         semver='^v([0-9]+\.){0,2}(\*|[0-9]+)(-?r?c?)(\.[0-9]+)$'
