@@ -54,7 +54,7 @@ runs:
           if ! is_version_ge "2.0.0" "$version_num"; then
             log_error "cosign versions below v2.0.0 are no longer supported."
             log_error "Requested version: ${{ inputs.cosign-release }}"
-            log_error "Please use cosign v2.4.0 or later."
+            log_error "Please use cosign v2.6.0 or later."
             log_error "See https://github.com/sigstore/cosign/releases for available versions."
             exit 1
           fi
