@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v2.6.0'
+    default: 'v3.0.2'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -37,6 +37,13 @@ runs:
         fi
         set -e
 
+        # This function helps compare versions.
+        # Returns 0 if version1 >= version2, 1 otherwise.
+        # Usage: is_version_ge "3.0.0" "$version_num"
+        is_version_ge() {
+            [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" == "$1" ]
+        }
+
         # Check for unsupported old versions (anything below v2.0.0)
         if [[ "${{ inputs.cosign-release }}" != "main" ]]; then
           # Extract version without 'v' prefix for comparison
@@ -44,10 +51,10 @@ runs:
           version_num="${version_num#v}"
 
           # Check if version is less than v2.0.0
-          if [[ "$version_num" =~ ^[01]\. ]] || [[ "$version_num" =~ ^0\. ]]; then
+          if ! is_version_ge "2.0.0" "$version_num"; then
             log_error "cosign versions below v2.0.0 are no longer supported."
             log_error "Requested version: ${{ inputs.cosign-release }}"
-            log_error "Please use cosign v2.4.0 or later."
+            log_error "Please use cosign v2.6.0 or later."
             log_error "See https://github.com/sigstore/cosign/releases for available versions."
             exit 1
           fi
@@ -58,7 +65,7 @@ runs:
         if [[ ${{ inputs.cosign-release }} == "main" ]]; then
           log_info "installing cosign via 'go install' from its main version"
           GOBIN=$(go env GOPATH)/bin
-          go install github.com/sigstore/cosign/v2/cmd/cosign@main
+          go install github.com/sigstore/cosign/v3/cmd/cosign@main
           ln -s $GOBIN/cosign ${{ inputs.install-dir}}/cosign
           exit 0
         fi
@@ -81,13 +88,13 @@ runs:
           esac
         }
 
-        bootstrap_version='v2.6.0'
-        bootstrap_linux_amd64_sha='ea5c65f99425d6cfbb5c4b5de5dac035f14d09131c1a0ea7c7fc32eab39364f9'
-        bootstrap_linux_arm_sha='641e05c21ce423cd263a49b1f9ffca58e2df022cb12020dcea63f8317c456950'
-        bootstrap_linux_arm64_sha='e09684650882fd721ed22b716ffc399ee11426cd4d1c9b4fec539cba8bf46b86'
-        bootstrap_darwin_amd64_sha='83b0fb42bc265e62aef7de49f4979b7957c9b7320d362a9f20046b2f823330f3'
-        bootstrap_darwin_arm64_sha='dea5b83b8b375b99ac803c7bdb1f798963dbeb47789ceb72153202e7f20e8d07'
-        bootstrap_windows_amd64_sha='7beb4dd1e19a72c328bbf7c0d7342d744edbf5cbb082f227b2b76e04a21c16ef'
+        bootstrap_version='v3.0.2'
+        bootstrap_linux_amd64_sha='46dbdcb5467a3dfec2526923d0b3365e40c8d9dc00ec23d5aca3437449e8cbfd'
+        bootstrap_linux_arm_sha='067df248315ee0c4af1cedb1cce65ad826f784be11ef88afd8d36e87c07162b6'
+        bootstrap_linux_arm64_sha='17fd784737ca54d7d8a343c82da6c5d6dbdee971e66644d923d1b057fb97d7ed'
+        bootstrap_darwin_amd64_sha='0fc2b6f16b900abdfda3153b11fc435a8cbe3830e8e820fe8ad5fe4149a5b472'
+        bootstrap_darwin_arm64_sha='3823b044de184da21e300bc5e20dd29d3fa9243af3ba70c4a5da1712f3385d46'
+        bootstrap_windows_amd64_sha='7a137280d8686665ceb4d8565df2a0ac63f28031e014cdcae5d56891a6c8a400'
         cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
@@ -199,9 +206,6 @@ runs:
 
         # same hash means it is the same release
         if [[ $shaCustom != $shaBootstrap ]]; then
-          log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig"
-          $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${desired_cosign_filename}.sig
-
           log_info "Downloading cosign public key '${{ inputs.cosign-release }}' of cosign...\n    https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub"
           RELEASE_COSIGN_PUB_KEY=https://raw.githubusercontent.com/sigstore/cosign/${{ inputs.cosign-release }}/release/release-cosign.pub
           RELEASE_COSIGN_PUB_KEY_SHA='f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126'
@@ -214,8 +218,32 @@ runs:
             exit 1
           fi
 
-          log_info "Using bootstrap cosign to verify signature of desired cosign version"
-          ./cosign verify-blob --key public.key --signature ${desired_cosign_filename}.sig cosign_${{ inputs.cosign-release }}
+          if is_version_ge "3.0.1" "$version_num"; then
+            # we're trying to get something greater than or equal to v3.0.1
+            keyless_signature_file=${desired_cosign_filename}.sigstore.json
+            log_info "Downloading keyless verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}"
+            $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}
+
+            log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
+            ./cosign verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle ${keyless_signature_file} cosign_${{ inputs.cosign-release }}
+
+            if is_version_ge "3.0.2" "$version_num"; then
+              # we're trying to get something greater than or equal to v3.0.2
+              kms_signature_file=${desired_cosign_filename}-kms.sigstore.json
+              log_info "Downloading KMS verification bundle for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${kms_signature_file}"
+              $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${kms_signature_file}
+
+              log_info "Using bootstrap cosign to verify signature of desired cosign version"
+              ./cosign verify-blob --key public.key --bundle ${kms_signature_file} cosign_${{ inputs.cosign-release }}
+            fi
+          else
+            signature_file=${desired_cosign_filename}.sig
+            log_info "Downloading detached signature for platform-specific '${{ inputs.cosign-release }}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}"
+            $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}
+
+            log_info "Using bootstrap cosign to verify signature of desired cosign version"
+            ./cosign verify-blob --key public.key --signature ${signature_file} cosign_${{ inputs.cosign-release }}
+          fi
 
           $SUDO rm cosign
           $SUDO mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}
