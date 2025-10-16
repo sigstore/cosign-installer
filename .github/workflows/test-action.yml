@@ -26,11 +26,11 @@ jobs:
             const response = await github.rest.repos.listReleases({owner:'sigstore',repo:'cosign'});
             const releases = response.data.map(release => release.tag_name);
             console.log("Found releases: " + releases);
-            // filter out versions below v2.0.0
+            // filter to only include major version 2
             return releases.filter(rel => {
               const version = rel.replace(/^v/, '');
               const majorVersion = parseInt(version.split('.')[0]);
-              return majorVersion >= 2;
+              return majorVersion === 2;
             });
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
