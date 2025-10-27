@@ -225,7 +225,7 @@ runs:
             $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${keyless_signature_file}
 
             log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
-            ./cosign verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle ${keyless_signature_file} cosign_${{ inputs.cosign-release }}
+            ./${cosign_executable_name} verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle ${keyless_signature_file} cosign_${{ inputs.cosign-release }}
 
             if is_version_ge "3.0.2" "$version_num"; then
               # we're trying to get something greater than or equal to v3.0.2
@@ -234,7 +234,7 @@ runs:
               $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${kms_signature_file}
 
               log_info "Using bootstrap cosign to verify signature of desired cosign version"
-              ./cosign verify-blob --key public.key --bundle ${kms_signature_file} cosign_${{ inputs.cosign-release }}
+              ./${cosign_executable_name} verify-blob --key public.key --bundle ${kms_signature_file} cosign_${{ inputs.cosign-release }}
             fi
           else
             signature_file=${desired_cosign_filename}.sig
@@ -242,10 +242,10 @@ runs:
             $SUDO curl -fsLO https://github.com/sigstore/cosign/releases/download/${{ inputs.cosign-release }}/${signature_file}
 
             log_info "Using bootstrap cosign to verify signature of desired cosign version"
-            ./cosign verify-blob --key public.key --signature ${signature_file} cosign_${{ inputs.cosign-release }}
+            ./${cosign_executable_name} verify-blob --key public.key --signature ${signature_file} cosign_${{ inputs.cosign-release }}
           fi
 
-          $SUDO rm cosign
+          $SUDO rm ${cosign_executable_name}
           $SUDO mv cosign_${{ inputs.cosign-release }} ${cosign_executable_name}
           $SUDO chmod +x ${cosign_executable_name}
           log_info "Installation complete!"
