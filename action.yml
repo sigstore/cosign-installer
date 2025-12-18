@@ -32,6 +32,9 @@ runs:
         runner_os: ${{ runner.os }}
       run: |
         #!/bin/bash
+        # Substitute environment variables in install-dir input
+        install_dir=$(envsubst <<<"${input_install_dir}")
+
         # cosign install script
         shopt -s expand_aliases
         if [ -z "$NO_COLOR" ]; then
@@ -66,13 +69,13 @@ runs:
           fi
         fi
 
-        mkdir -p "${input_install_dir}"
+        mkdir -p "${install_dir}"
 
         if [[ "${input_cosign_release}" == "main" ]]; then
           log_info "installing cosign via 'go install' from its main version"
           GOBIN=$(go env GOPATH)/bin
           go install github.com/sigstore/cosign/v3/cmd/cosign@main
-          ln -s "$GOBIN/cosign" "${input_install_dir}/cosign"
+          ln -s "$GOBIN/cosign" "${install_dir}/cosign"
           exit 0
         fi
 
@@ -105,7 +108,7 @@ runs:
 
         trap "popd >/dev/null" EXIT
 
-        pushd "${input_install_dir}" > /dev/null
+        pushd "${install_dir}" > /dev/null
 
         case ${runner_os} in
           Linux|linux)
@@ -261,10 +264,12 @@ runs:
       shell: bash
       env:
         input_install_dir: ${{ inputs.install-dir }}
-      run: echo "${input_install_dir}" >> "$GITHUB_PATH"
+      run: envsubst <<<"${input_install_dir}" >> "$GITHUB_PATH"
 
     - if: ${{ runner.os == 'Windows' }}
       shell: pwsh
       env:
         input_install_dir: ${{ inputs.install-dir }}
-      run: echo "${env:input_install_dir}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      run: |
+        $install_dir = $ExecutionContext.InvokeCommand.ExpandString("${env:input_install_dir}")
+        echo "${install_dir}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
