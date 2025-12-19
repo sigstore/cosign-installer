@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v3.0.2'
+    default: 'v3.0.3'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -97,13 +97,14 @@ runs:
           esac
         }
 
-        bootstrap_version='v3.0.2'
-        bootstrap_linux_amd64_sha='46dbdcb5467a3dfec2526923d0b3365e40c8d9dc00ec23d5aca3437449e8cbfd'
-        bootstrap_linux_arm_sha='067df248315ee0c4af1cedb1cce65ad826f784be11ef88afd8d36e87c07162b6'
-        bootstrap_linux_arm64_sha='17fd784737ca54d7d8a343c82da6c5d6dbdee971e66644d923d1b057fb97d7ed'
-        bootstrap_darwin_amd64_sha='0fc2b6f16b900abdfda3153b11fc435a8cbe3830e8e820fe8ad5fe4149a5b472'
-        bootstrap_darwin_arm64_sha='3823b044de184da21e300bc5e20dd29d3fa9243af3ba70c4a5da1712f3385d46'
-        bootstrap_windows_amd64_sha='7a137280d8686665ceb4d8565df2a0ac63f28031e014cdcae5d56891a6c8a400'
+        bootstrap_version='v3.0.3'
+        bootstrap_linux_amd64_sha="052363a0e23e2e7ed53641351b8b420918e7e08f9c1d8a42a3dd3877a78a2e10"
+        bootstrap_linux_arm_sha="8ec0385ec4d088cb26c40eacf0fd1c3f8b52d76fdd601cab9a371dcedc1a59fc"
+        bootstrap_linux_arm64_sha="81398231362031e3c7afd6a7508c57049460cd7e02736f1ebe89a452102253e5"
+        bootstrap_darwin_amd64_sha="6c75981e85e081a73f0b4087f58e0ad5fd4712c71b37fa0b6ad774c1f965bafa"
+        bootstrap_darwin_arm64_sha="38349e45a8bb0d1ed3a7affb8bdd2e9d597cee08b6800c395a926b4d9adb84d2"
+        bootstrap_windows_amd64_sha="2593655025b52b5b1c99e43464459b645a3acbe5d4a5a9f3a766e77beec5a441"
+
         cosign_executable_name=cosign
 
         trap "popd >/dev/null" EXIT
@@ -236,8 +237,8 @@ runs:
             log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
             "./${cosign_executable_name}" verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle "${keyless_signature_file}" "cosign_${input_cosign_release}"
 
-            if is_version_ge "3.0.2" "$version_num"; then
-              # we're trying to get something greater than or equal to v3.0.2
+            if is_version_ge "3.0.3" "$version_num"; then
+              # we're trying to get something greater than or equal to v3.0.3
               kms_signature_file=${desired_cosign_filename}-kms.sigstore.json
               log_info "Downloading KMS verification bundle for platform-specific '${input_cosign_release}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${kms_signature_file}"
               $SUDO curl -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${kms_signature_file}"
