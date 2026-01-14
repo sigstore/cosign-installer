@@ -83,7 +83,7 @@ jobs:
 This action does not need any GitHub permission to run, however, if your workflow needs to update, create or perform any
 action against your repository, then you should change the scope of the permission appropriately.
 
-For example, if you are using the `gcr.io` as your registry to push the images you will need to give the `write` permission
+For example, if you are using the `ghcr.io` as your registry to push the images you will need to give the `write` permission
 to the `packages` scope.
 
 Example of a simple workflow:
