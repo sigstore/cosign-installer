@@ -46,6 +46,8 @@ runs:
         fi
         set -e
 
+        CURL_RETRIES=3
+
         # This function helps compare versions.
         # Returns 0 if version1 >= version2, 1 otherwise.
         # Usage: is_version_ge "3.0.0" "$version_num"
@@ -187,7 +189,7 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
-        $SUDO curl -fsSL "https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}" -o "${cosign_executable_name}"
+        $SUDO curl --retry ${CURL_RETRIES} -fsSL "https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}" -o "${cosign_executable_name}"
         shaBootstrap=$(shaprog "${cosign_executable_name}")
         if [[ "$shaBootstrap" != "${expected_bootstrap_version_digest}" ]]; then
           log_error "Unable to validate cosign version: '${input_cosign_release}'"
@@ -211,7 +213,7 @@ runs:
 
         # Download custom cosign
         log_info "Downloading platform-specific version '${input_cosign_release}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${desired_cosign_filename}"
-        $SUDO curl -fsSL "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${desired_cosign_filename}" -o "cosign_${input_cosign_release}"
+        $SUDO curl --retry ${CURL_RETRIES} -fsSL "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${desired_cosign_filename}" -o "cosign_${input_cosign_release}"
         shaCustom=$(shaprog "cosign_${input_cosign_release}");
 
         # same hash means it is the same release
@@ -221,7 +223,7 @@ runs:
           RELEASE_COSIGN_PUB_KEY_SHA='f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126'
 
           log_info "Verifying public key matches expected value"
-          $SUDO curl -fsSL "$RELEASE_COSIGN_PUB_KEY" -o public.key
+          $SUDO curl --retry ${CURL_RETRIES} -fsSL "$RELEASE_COSIGN_PUB_KEY" -o public.key
           sha_fetched_key=$(shaprog public.key)
           if [[ "$sha_fetched_key" != "$RELEASE_COSIGN_PUB_KEY_SHA" ]]; then
             log_error "Fetched public key does not match expected digest, exiting"
@@ -232,7 +234,7 @@ runs:
             # we're trying to get something greater than or equal to v3.0.1
             keyless_signature_file=${desired_cosign_filename}.sigstore.json
             log_info "Downloading keyless verification bundle for platform-specific '${input_cosign_release}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${keyless_signature_file}"
-            $SUDO curl -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${keyless_signature_file}"
+            $SUDO curl --retry ${CURL_RETRIES} -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${keyless_signature_file}"
 
             log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
             "./${cosign_executable_name}" verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle "${keyless_signature_file}" "cosign_${input_cosign_release}"
@@ -241,7 +243,7 @@ runs:
               # we're trying to get something greater than or equal to v3.0.3
               kms_signature_file=${desired_cosign_filename}-kms.sigstore.json
               log_info "Downloading KMS verification bundle for platform-specific '${input_cosign_release}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${kms_signature_file}"
-              $SUDO curl -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${kms_signature_file}"
+              $SUDO curl --retry ${CURL_RETRIES} -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${kms_signature_file}"
 
               log_info "Using bootstrap cosign to verify signature of desired cosign version"
               "./${cosign_executable_name}" verify-blob --key public.key --bundle "${kms_signature_file}" "cosign_${input_cosign_release}"
@@ -249,7 +251,7 @@ runs:
           else
             signature_file=${desired_cosign_filename}.sig
             log_info "Downloading detached signature for platform-specific '${input_cosign_release}' of cosign...\n      https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${signature_file}"
-            $SUDO curl -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${signature_file}"
+            $SUDO curl --retry ${CURL_RETRIES} -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${signature_file}"
 
             log_info "Using bootstrap cosign to verify signature of desired cosign version"
             "./${cosign_executable_name}" verify-blob --key public.key --signature "${signature_file}" "cosign_${input_cosign_release}"
