@@ -237,6 +237,7 @@ jobs:
           - windows-latest
         go_version:
           - '1.25'
+          - '1.26'
     name: Try to install cosign with go ${{ matrix.go_version }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
