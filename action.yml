@@ -97,13 +97,13 @@ runs:
           esac
         }
 
-        bootstrap_version='v3.0.3'
-        bootstrap_linux_amd64_sha="052363a0e23e2e7ed53641351b8b420918e7e08f9c1d8a42a3dd3877a78a2e10"
-        bootstrap_linux_arm_sha="8ec0385ec4d088cb26c40eacf0fd1c3f8b52d76fdd601cab9a371dcedc1a59fc"
-        bootstrap_linux_arm64_sha="81398231362031e3c7afd6a7508c57049460cd7e02736f1ebe89a452102253e5"
-        bootstrap_darwin_amd64_sha="6c75981e85e081a73f0b4087f58e0ad5fd4712c71b37fa0b6ad774c1f965bafa"
-        bootstrap_darwin_arm64_sha="38349e45a8bb0d1ed3a7affb8bdd2e9d597cee08b6800c395a926b4d9adb84d2"
-        bootstrap_windows_amd64_sha="2593655025b52b5b1c99e43464459b645a3acbe5d4a5a9f3a766e77beec5a441"
+        bootstrap_version='v3.0.5'
+        bootstrap_linux_amd64_sha="db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2"
+        bootstrap_linux_arm_sha="4866f388e87125f1f492231dbbb347bb73b601c810595b65b2ae09eae4c8a99d"
+        bootstrap_linux_arm64_sha="d098f3168ae4b3aa70b4ca78947329b953272b487727d1722cb3cb098a1a20ab"
+        bootstrap_darwin_amd64_sha="e032c44d3f7c247bbb2966b41239f88ffba002497a4516358d327ad5693c386f"
+        bootstrap_darwin_arm64_sha="4888c898e2901521a6bd4cf4f0383c9465588a6a46ecd2465ad34faf13f09eb7"
+        bootstrap_windows_amd64_sha="44e9e44202b67ddfaaf5ea1234f5a265417960c4ae98c5b57c35bc40ba9dd714"
 
         cosign_executable_name=cosign
 
