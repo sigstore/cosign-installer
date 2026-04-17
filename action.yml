@@ -100,87 +100,82 @@ runs:
         }
 
         bootstrap_version='v3.0.5'
-        bootstrap_linux_amd64_sha="db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2"
-        bootstrap_linux_arm_sha="4866f388e87125f1f492231dbbb347bb73b601c810595b65b2ae09eae4c8a99d"
-        bootstrap_linux_arm64_sha="d098f3168ae4b3aa70b4ca78947329b953272b487727d1722cb3cb098a1a20ab"
-        bootstrap_darwin_amd64_sha="e032c44d3f7c247bbb2966b41239f88ffba002497a4516358d327ad5693c386f"
-        bootstrap_darwin_arm64_sha="4888c898e2901521a6bd4cf4f0383c9465588a6a46ecd2465ad34faf13f09eb7"
-        bootstrap_windows_amd64_sha="44e9e44202b67ddfaaf5ea1234f5a265417960c4ae98c5b57c35bc40ba9dd714"
-
-        cosign_executable_name=cosign
+        cat <<'EOF' > /tmp/cosign_checksums.txt
+        b79ad4e47164ddb242db7ac6a784e51cb286e86f4f9a6ca39c053842450853e5  cosign-3.0.5-1.aarch64.rpm
+        f17df065b308828f26d2e076f6e4a48478ada299c8ac58cb7771ce85e6d49595  cosign-3.0.5-1.armv7hl.rpm
+        76a75e7dfa875a3ec7baed5a1fa54b153d6087b287e4754ba827786e3f17fbcc  cosign-3.0.5-1.ppc64le.rpm
+        b595f502fdc4ba54b5cebd9611a81efef8698b74695ec668255c1d50058344ee  cosign-3.0.5-1.riscv64.rpm
+        84b32aafdda81432f1c5abce6191ad516fb7f1bd78669da7acc031778132f6ad  cosign-3.0.5-1.s390x.rpm
+        14c85108c29ad653fb91be156350ea5ba5ba44ab04c2e6ad214fafe093764e18  cosign-3.0.5-1.x86_64.rpm
+        e032c44d3f7c247bbb2966b41239f88ffba002497a4516358d327ad5693c386f  cosign-darwin-amd64
+        94a3498469084b57e0bd0d4fcb96dba0fa9d5a65983a229757fa64724913eb6e  cosign-darwin-amd64_3.0.5_darwin_amd64.sbom.json
+        4888c898e2901521a6bd4cf4f0383c9465588a6a46ecd2465ad34faf13f09eb7  cosign-darwin-arm64
+        3054c4d5a41669b5a13eaf6679e3addac64e92b2b93a3b63f9b9073ea8e2a863  cosign-darwin-arm64_3.0.5_darwin_arm64.sbom.json
+        db15cc99e6e4837daabab023742aaddc3841ce57f193d11b7c3e06c8003642b2  cosign-linux-amd64
+        80b00cb0930622d7f447d0e2ff9e0d07e60c7ae59b39c6db011bdba93b84baa0  cosign-linux-amd64_3.0.5_linux_amd64.sbom.json
+        4866f388e87125f1f492231dbbb347bb73b601c810595b65b2ae09eae4c8a99d  cosign-linux-arm
+        d098f3168ae4b3aa70b4ca78947329b953272b487727d1722cb3cb098a1a20ab  cosign-linux-arm64
+        6a8108a7740e30ce51a51867a2fb56097cbacd203cfc5bbb3b389bc4e003b955  cosign-linux-arm64_3.0.5_linux_arm64.sbom.json
+        efd7f9ee648d5ce79115a10fa333a4cb9d5710303599d515e4d04edf3d5115de  cosign-linux-arm_3.0.5_linux_arm.sbom.json
+        c453aa84bc5e560299e3637c64396eedf135688ef9234a2ad99b023328baae6f  cosign-linux-pivkey-pkcs11key-amd64
+        a9aa5100f68a81c4e056fddbebaa37eafa4f947b3050423703e7f57dc9db5647  cosign-linux-pivkey-pkcs11key-amd64_3.0.5_linux_amd64.sbom.json
+        63b8cdf7f6e2a87db0a79bb7f5039655feeb07f9ecc63e886feecfafc2194dce  cosign-linux-pivkey-pkcs11key-arm64
+        174052cf810d1ffc8741be713a5185e409c828e5545282cc5746479ae589ca5c  cosign-linux-pivkey-pkcs11key-arm64_3.0.5_linux_arm64.sbom.json
+        ccd07709a25fd549dc3987eb378c4fecc1d7b851c904a59528cae8144f725c36  cosign-linux-ppc64le
+        da0452b5101331759f4434fbabbd9bf445e5eda78cdeca7b93b1f9f43025aaf8  cosign-linux-ppc64le_3.0.5_linux_ppc64le.sbom.json
+        9d108e72249dacb6ef5685320f34efcd0d85b842df90552b8fd7903a39a11c98  cosign-linux-riscv64
+        8b2fa0590592e09ad1d87bde39ff9313ad73500274bf8907d9019b225fae562d  cosign-linux-riscv64_3.0.5_linux_riscv64.sbom.json
+        45ebd52e4cb3c1c5dc0661f76728fa9ee7a510ae211b0cde3c43e4d8bebade86  cosign-linux-s390x
+        c102c6574a3691b6373aca6e8f9cdca367876ba183932d05d3e2ff91bb013fba  cosign-linux-s390x_3.0.5_linux_s390x.sbom.json
+        44e9e44202b67ddfaaf5ea1234f5a265417960c4ae98c5b57c35bc40ba9dd714  cosign-windows-amd64.exe
+        2b44785f58fecb98d1d91765917984f9b979064b1671e4f906c436cb9990d7bd  cosign-windows-amd64.exe_3.0.5_windows_amd64.sbom.json
+        4ad067920ecd9c8250258024eed49ad02823f4d5c44b4af22063562c35ed840c  cosign_3.0.5_aarch64.apk
+        303534f1beffd44a0238221e5138076cf407b3ffc6c76a9cd2b649149e90376b  cosign_3.0.5_amd64.deb
+        e494659209dc2e339f25ac5694ad86727c97d23319b186f1504eeef0510f870f  cosign_3.0.5_arm64.deb
+        b3411b6bf566b65acee9095ff1d588dbf6e3945bc994b7933cc2f320f3ef735e  cosign_3.0.5_armhf.deb
+        6cb0f05657f2448e147f5823a67ec53442674049ee4b3fea7d8132ae442939ef  cosign_3.0.5_armv7.apk
+        3f5056a60600d94ce65c3669a3dfb749f498d83e4ead83ebb95ab490d2665e6c  cosign_3.0.5_ppc64el.deb
+        69ec625e53261654815277a779ca2e396a18ff270643262bfb1667c106a3eea9  cosign_3.0.5_ppc64le.apk
+        7f5e9f631d3c06213097e6948d79b27e5854567ab366554e5fdea743562808e2  cosign_3.0.5_riscv64.apk
+        fd334c925508b34a76876ebf29486642e4f2722181e44923a801085f13f16c0f  cosign_3.0.5_riscv64.deb
+        0a5cc155984d8e389025eefb4f88eb356df921dc94abb0e42e6d43d301f1ce9e  cosign_3.0.5_s390x.apk
+        07ec93cd26f5391919b980f71c115677e93586cbb7e27b696fcdf8a85e4ac0b5  cosign_3.0.5_s390x.deb
+        e9bb1d18bb441bfb4b4a3f3b529fd1d2d2365d9d091f41606fc8ab8df3979d73  cosign_3.0.5_x86_64.apk
+        EOF
 
         trap "popd >/dev/null" EXIT
 
         pushd "${install_dir}" > /dev/null
 
-        case ${runner_os} in
-          Linux|linux)
-            case ${runner_arch} in
-              X64|amd64)
-                bootstrap_filename='cosign-linux-amd64'
-                bootstrap_sha=${bootstrap_linux_amd64_sha}
-                desired_cosign_filename='cosign-linux-amd64'
-                ;;
+        rejson='
+        {
+          "os": {
+            "darwin":   "macOS|macos"
+          },
+          "arch": {
+            "amd64":    "X64|amd64"
+          },
+          "env": {
+            "windows": {
+              "amd64": { "cosign_executable_name": "cosign.exe" }
+            }
+          }
+        }
+        '
 
-              ARM|arm)
-                bootstrap_filename='cosign-linux-arm'
-                bootstrap_sha=${bootstrap_linux_arm_sha}
-                desired_cosign_filename='cosign-linux-arm'
-                ;;
-
-              ARM64|arm64)
-                bootstrap_filename='cosign-linux-arm64'
-                bootstrap_sha=${bootstrap_linux_arm64_sha}
-                desired_cosign_filename='cosign-linux-arm64'
-                ;;
-
-              *)
-                log_error "unsupported architecture ${runner_arch}"
-                exit 1
-                ;;
-            esac
-            ;;
-
-          macOS|macos)
-            case ${runner_arch} in
-              X64|amd64)
-                bootstrap_filename='cosign-darwin-amd64'
-                bootstrap_sha=${bootstrap_darwin_amd64_sha}
-                desired_cosign_filename='cosign-darwin-amd64'
-                ;;
-
-              ARM64|arm64)
-                bootstrap_filename='cosign-darwin-arm64'
-                bootstrap_sha=${bootstrap_darwin_arm64_sha}
-                desired_cosign_filename='cosign-darwin-arm64'
-                ;;
-
-              *)
-                log_error "unsupported architecture ${runner_arch}"
-                exit 1
-                ;;
-            esac
-            ;;
-
-          Windows|windows)
-            case ${runner_arch} in
-              X64|amd64)
-                bootstrap_filename='cosign-windows-amd64.exe'
-                bootstrap_sha=${bootstrap_windows_amd64_sha}
-                desired_cosign_filename='cosign-windows-amd64.exe'
-                cosign_executable_name=cosign.exe
-                ;;
-              *)
-                log_error "unsupported architecture ${runner_arch}"
-                exit 1
-                ;;
-            esac
-            ;;
-          *)
-            log_error "unsupported os ${runner_os}"
-            exit 1
-            ;;
-        esac
+        jq --raw-output --argjson re "${rejson}" --arg runner_os "${runner_os}" --arg runner_arch "${runner_arch}" --raw-input '
+        [inputs]|map(capture("(?<sha>[[:xdigit:]]+)  (?<filename>.+)$")) as $cosign_checksums |
+        ($re.os | to_entries | map(.value as $regex | select($runner_os | test("^(\($regex))$"))|.key) | first // "\($runner_os|ascii_downcase)") as $os_match |
+        ($re.arch | to_entries | map(.value as $regex | select($runner_arch | test("^(\($regex))$"))|.key) | first // "\($runner_arch|ascii_downcase)") as $arch_match |
+        ($cosign_checksums | map(select(.filename|test("^cosign-\($os_match)-\($arch_match)(.([[:alnum:]]+))?$"))) | first) as $fileinfo |
+        $re.env."\($os_match)"."\($arch_match)" as $env |
+        { "bootstrap_filename": "\($fileinfo.filename // "")",
+          "bootstrap_sha": "\($fileinfo.sha // "")",
+          "desired_cosign_filename": "\($fileinfo.filename // "")",
+          "cosign_executable_name": "\($env.cosign_executable_name // "cosign")"
+        } | to_entries | map("\(.key)=\"\(.value)\"") | join("\n")
+        ' < /tmp/cosign_checksums.txt | tee /tmp/bootstrap.env
+        source /tmp/bootstrap.env
 
         SUDO=
         if [[ "${input_use_sudo}" == "true" ]] && command -v sudo >/dev/null; then
