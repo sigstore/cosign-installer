@@ -49,7 +49,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v4.1.0
         with:
-          cosign-release: 'v3.0.5'
+          cosign-release: 'v3.0.6'
       - name: Check install!
         run: cosign version
 ```
