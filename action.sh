@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e -o pipefail
+
 input_use_sudo="${input_use_sudo:-"false"}"
 input_cosign_release="${input_cosign_release:-""}"
 input_install_dir="${input_install_dir:-"${HOME}/.cosign"}"
@@ -35,13 +37,16 @@ if ! command -v envsubst >/dev/null; then
       . /etc/os-release
       case "$ID" in
         arch)
-          $SUDO pacman -S --noconfirm gettext
+          $SUDO pacman --sync --refresh --noconfirm gettext
           ;;
         ubuntu|debian)
+          $SUDO apt-get update --yes
           $SUDO apt-get install --yes gettext
           ;;
         fedora|rhel|centos)
+          $SUDO dnf check-update --refresh
           $SUDO dnf install --assumeyes gettext
+          $SUDO dnf clean all
           ;;
         *)
           log_error "Please refer to your distribution's documentation for installing envsubst"
@@ -56,14 +61,10 @@ if ! command -v envsubst >/dev/null; then
     log_error "Unsupported OS type: $OSTYPE. Please refer to your system's documentation for installing envsubst."
     exit 1
   fi
-
 fi
 
 # Substitute environment variables in install-dir input
 install_dir=$(envsubst <<<"${input_install_dir}")
-
-# cosign install script
-set -e
 
 CURL_RETRIES=3
 
