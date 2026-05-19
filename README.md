@@ -166,8 +166,15 @@ The following optional inputs:
 | Input | Description |
 | --- | --- |
 | `cosign-release` | `cosign` version to use instead of the default. |
-| `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). |
+| `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). Ignored when `use-tool-cache` is `true`. |
 | `use-sudo` | set to `true` if `install-dir` location requires sudo privs. Defaults to false. |
+| `use-tool-cache` | set to `true` to cache the `cosign` binary in `$RUNNER_TOOL_CACHE` for reuse across runs. On a cache hit, the binary's checksum is re-verified against the value stored during the original install before use. Defaults to false. |
+
+### Outputs
+
+| Output | Description |
+| --- | --- |
+| `cache-hit` | Set to `true` when `cosign` was found in the tool cache and installation was skipped. Only meaningful when `use-tool-cache` is `true`. |
 
 ## Security
 
