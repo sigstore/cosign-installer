@@ -119,6 +119,32 @@ jobs:
           fi
         shell: bash
 
+  test_cosign_action_version_file:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    permissions:
+      contents: read
+    name: Install Cosign from cosign-release-file on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Create version file
+        run: echo "cosign v3.0.5" > .tool-versions
+        shell: bash
+      - name: Install Cosign from version file
+        uses: ./
+        with:
+          cosign-release-file: ".tool-versions"
+      - name: Check install!
+        run: cosign version
+      - name: Check version matches file
+        run: cosign version 2>&1 | grep "3.0.5"
+        shell: bash
+
   test_unsupported_versions:
     runs-on: ${{ matrix.os }}
     strategy:

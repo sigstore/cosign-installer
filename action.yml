@@ -11,6 +11,9 @@ inputs:
     description: 'cosign release version to be installed'
     required: false
     default: 'v3.0.6'
+  cosign-release-file:
+    description: "path to a file containing the cosign release version (asdf '.tool-versions' or a plain version file; the version is used as-is, e.g. v3.0.6). Takes precedence over 'cosign-release' when set."
+    required: false
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -26,6 +29,7 @@ runs:
     - shell: bash
       env:
         input_cosign_release: ${{ inputs.cosign-release }}
+        input_cosign_release_file: ${{ inputs.cosign-release-file }}
         input_install_dir: ${{ inputs.install-dir }}
         input_use_sudo: ${{ inputs.use-sudo }}
         runner_arch: ${{ runner.arch }}
@@ -54,6 +58,41 @@ runs:
         is_version_ge() {
             [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" == "$1" ]
         }
+
+        # Resolve the cosign version from a version file. Supports the asdf
+        # '.tool-versions' format (a line such as "cosign v3.0.6") as well as a
+        # plain file that contains only the version string.
+        resolve_version_from_file() {
+          local file="$1"
+          local version=""
+
+          if [[ ! -f "${file}" ]]; then
+            log_error "cosign-release-file '${file}' does not exist." >&2
+            exit 1
+          fi
+
+          # asdf '.tool-versions' format: a line such as "cosign v3.0.6".
+          version=$(grep -E '^[[:space:]]*cosign[[:space:]]+' "${file}" | head -n 1 | tr -d '\r' | awk '{print $2}') || true
+
+          # Otherwise treat the file as a plain version file (first token of the
+          # first non-empty, non-comment line).
+          if [[ -z "${version}" ]]; then
+            version=$(grep -vE '^[[:space:]]*(#|$)' "${file}" | head -n 1 | tr -d '\r' | awk '{print $1}') || true
+          fi
+
+          if [[ -z "${version}" ]]; then
+            log_error "no cosign version found in cosign-release-file '${file}'." >&2
+            exit 1
+          fi
+
+          echo "${version}"
+        }
+
+        # A version file takes precedence over the 'cosign-release' input when set.
+        if [[ -n "${input_cosign_release_file:-}" ]]; then
+          input_cosign_release="$(resolve_version_from_file "${input_cosign_release_file}")"
+          log_info "Using cosign version '${input_cosign_release}' from cosign-release-file '${input_cosign_release_file}'."
+        fi
 
         # Check for unsupported old versions (anything below v2.0.0)
         if [[ "${input_cosign_release}" != "main" ]]; then
