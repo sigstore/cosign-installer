@@ -90,7 +90,7 @@ runs:
               shasum -a256 "$1" | cut -d' ' -f1
               ;;
             Windows|windows)
-              powershell -command "(Get-FileHash $1 -Algorithm SHA256 | Select-Object -ExpandProperty Hash).ToLower()"
+              powershell -command "(Get-FileHash \"$1\" -Algorithm SHA256 | Select-Object -ExpandProperty Hash).ToLower()"
               ;;
             *)
               log_error "unsupported OS ${runner_os}"
