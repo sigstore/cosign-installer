@@ -166,6 +166,7 @@ The following optional inputs:
 | Input | Description |
 | --- | --- |
 | `cosign-release` | `cosign` version to use instead of the default. |
+| `cosign-release-file` | path to a file containing the `cosign` version to use. Supports the asdf [`.tool-versions`](https://asdf-vm.com/manage/configuration.html#tool-versions) layout (the `cosign` entry) and plain version files. The version is used as-is, so include the leading `v` (for example `cosign v3.0.6`). Takes precedence over `cosign-release` when set. |
 | `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). |
 | `use-sudo` | set to `true` if `install-dir` location requires sudo privs. Defaults to false. |
 
