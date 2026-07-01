@@ -252,3 +252,84 @@ jobs:
           cosign-release: 'main'
       - name: Check install!
         run: cosign version
+
+  test_tool_cache:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    permissions:
+      contents: read
+    name: Test tool cache on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Install cosign with tool cache (first run)
+        id: install-first
+        uses: ./
+        with:
+          cosign-release: 'v3.0.5'
+          use-tool-cache: 'true'
+      - name: Verify first install reports cache miss and binary works
+        shell: bash
+        run: |
+          if [[ "${{ steps.install-first.outputs.cache-hit }}" == "false" ]]; then
+            echo "First install correctly reported cache-hit=false"
+          else
+            echo "First install should report cache-hit=false"
+            exit 1
+          fi
+          cosign version
+      - name: Install cosign with tool cache again (should hit cache)
+        id: install-second
+        uses: ./
+        with:
+          cosign-release: 'v3.0.5'
+          use-tool-cache: 'true'
+      - name: Verify second install uses cache and binary still works
+        shell: bash
+        run: |
+          if [[ "${{ steps.install-second.outputs.cache-hit }}" == "true" ]]; then
+            echo "Second install correctly reported cache-hit=true"
+          else
+            echo "Second install should report cache-hit=true"
+            exit 1
+          fi
+          cosign version
+
+  test_tool_cache_tamper_detection:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: Test tool cache rejects tampered binary
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Install cosign with tool cache
+        uses: ./
+        with:
+          cosign-release: 'v3.0.5'
+          use-tool-cache: 'true'
+      - name: Tamper with cached binary to simulate cache poisoning
+        shell: bash
+        run: |
+          echo "tampered" > "$RUNNER_TOOL_CACHE/cosign/v3.0.5/${{ runner.arch }}/cosign"
+      - name: Re-install cosign (tampered cache should be rejected)
+        id: install-after-tamper
+        uses: ./
+        with:
+          cosign-release: 'v3.0.5'
+          use-tool-cache: 'true'
+      - name: Verify tampered cache was rejected and binary is valid
+        shell: bash
+        run: |
+          if [[ "${{ steps.install-after-tamper.outputs.cache-hit }}" == "false" ]]; then
+            echo "Tampered cache correctly rejected (cache-hit=false)"
+          else
+            echo "Expected tampered cache to be rejected (cache-hit=false)"
+            exit 1
+          fi
+          cosign version
