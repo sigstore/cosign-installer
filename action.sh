@@ -1,16 +1,68 @@
 #!/bin/bash
+
+input_use_sudo="${input_use_sudo:-"false"}"
+input_cosign_release="${input_cosign_release:-""}"
+input_install_dir="${input_install_dir:-"${HOME}/.cosign"}"
+runner_os="${runner_os:-"unknown"}"
+runner_arch="${runner_arch:-"unknown"}"
+
+# Enable color output for logs if NO_COLOR is not set, otherwise use plain output.
+shopt -s expand_aliases
+if [ -z "$NO_COLOR" ]; then
+  alias log_info="echo -e \"\033[1;32mINFO\033[0m:\""
+  alias log_warn="echo -e \"\033[1;33mWARN\033[0m:\""
+  alias log_error="echo -e \"\033[1;31mERROR\033[0m:\""
+else
+  alias log_info="echo \"INFO:\""
+  alias log_warn="echo \"WARN:\""
+  alias log_error="echo \"ERROR:\""
+fi
+
+# Use sudo if requested and available, otherwise run commands as the current user
+SUDO=
+if [[ "${input_use_sudo}" == "true" ]] && command -v sudo >/dev/null; then
+  log_info "Using sudo"
+  SUDO=sudo
+fi
+
+# Ensure, that envsubst is available for substituting environment variables in the install-dir input. If not, attempt to
+# detect OS and distribution to provide installation instructions for envsubst.
+if ! command -v envsubst >/dev/null; then
+  log_warn "envsubst command not found. Try to detect OS and distribution to provide installation instructions for envsubst."
+
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if [ -f /etc/os-release ]; then
+      . /etc/os-release
+      case "$ID" in
+        arch)
+          $SUDO pacman -S --noconfirm gettext
+          ;;
+        ubuntu|debian)
+          $SUDO apt-get install --yes gettext
+          ;;
+        fedora|rhel|centos)
+          $SUDO dnf install --assumeyes gettext
+          ;;
+        *)
+          log_error "Please refer to your distribution's documentation for installing envsubst"
+          exit 1
+          ;;
+      esac
+    else
+      log_error "Unable to detect Linux distribution. Please refer to your distribution's documentation for installing envsubst."
+      exit 1
+    fi
+  else
+    log_error "Unsupported OS type: $OSTYPE. Please refer to your system's documentation for installing envsubst."
+    exit 1
+  fi
+
+fi
+
 # Substitute environment variables in install-dir input
 install_dir=$(envsubst <<<"${input_install_dir}")
 
 # cosign install script
-shopt -s expand_aliases
-if [ -z "$NO_COLOR" ]; then
-  alias log_info="echo -e \"\033[1;32mINFO\033[0m:\""
-  alias log_error="echo -e \"\033[1;31mERROR\033[0m:\""
-else
-  alias log_info="echo \"INFO:\""
-  alias log_error="echo \"ERROR:\""
-fi
 set -e
 
 CURL_RETRIES=3
@@ -57,7 +109,7 @@ shaprog() {
       shasum -a256 "$1" | cut -d' ' -f1
       ;;
     Windows|windows)
-      powershell -command "(Get-FileHash $1 -Algorithm SHA256 | Select-Object -ExpandProperty Hash).ToLower()"
+      powershell -command "(Get-FileHash \"$1\" -Algorithm SHA256 | Select-Object -ExpandProperty Hash).ToLower()"
       ;;
     *)
       log_error "unsupported OS ${runner_os}"
@@ -155,10 +207,6 @@ case ${runner_os} in
     ;;
 esac
 
-SUDO=
-if [[ "${input_use_sudo}" == "true" ]] && command -v sudo >/dev/null; then
-  SUDO=sudo
-fi
 
 expected_bootstrap_version_digest=${bootstrap_sha}
 log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
