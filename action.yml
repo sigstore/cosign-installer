@@ -140,6 +140,12 @@ runs:
                 desired_cosign_filename='cosign-linux-arm64'
                 ;;
 
+              RISCV64|riscv64)
+                bootstrap_filename='cosign-linux-riscv64'
+                bootstrap_sha=${bootstrap_linux_riscv64_sha}
+                desired_cosign_filename='cosign-linux-riscv64'
+                ;;
+
               *)
                 log_error "unsupported architecture ${runner_arch}"
                 exit 1
