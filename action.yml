@@ -19,22 +19,29 @@ inputs:
     description: 'set to true if install-dir location requires sudo privs'
     required: false
     default: 'false'
+  use-tool-cache:
+    description: 'Cache the cosign binary in $RUNNER_TOOL_CACHE for reuse across runs. When enabled, install-dir is ignored.'
+    required: false
+    default: 'false'
+outputs:
+  cache-hit:
+    description: 'Whether cosign was found in the tool cache and installation was skipped (only meaningful when use-tool-cache is true)'
+    value: ${{ steps.installer.outputs.cache-hit }}
 runs:
   using: "composite"
   steps:
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
-    - shell: bash
+    - id: installer
+      shell: bash
       env:
         input_cosign_release: ${{ inputs.cosign-release }}
         input_install_dir: ${{ inputs.install-dir }}
         input_use_sudo: ${{ inputs.use-sudo }}
+        input_use_tool_cache: ${{ inputs.use-tool-cache }}
         runner_arch: ${{ runner.arch }}
         runner_os: ${{ runner.os }}
       run: |
         #!/bin/bash
-        # Substitute environment variables in install-dir input
-        install_dir=$(envsubst <<<"${input_install_dir}")
-
         # cosign install script
         shopt -s expand_aliases
         if [ -z "$NO_COLOR" ]; then
@@ -55,32 +62,6 @@ runs:
             [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" == "$1" ]
         }
 
-        # Check for unsupported old versions (anything below v2.0.0)
-        if [[ "${input_cosign_release}" != "main" ]]; then
-          # Extract version without 'v' prefix for comparison
-          version_num="${input_cosign_release}"
-          version_num="${version_num#v}"
-
-          # Check if version is less than v2.0.0
-          if ! is_version_ge "2.0.0" "$version_num"; then
-            log_error "cosign versions below v2.0.0 are no longer supported."
-            log_error "Requested version: ${input_cosign_release}"
-            log_error "Please use cosign v2.6.0 or later."
-            log_error "See https://github.com/sigstore/cosign/releases for available versions."
-            exit 1
-          fi
-        fi
-
-        mkdir -p "${install_dir}"
-
-        if [[ "${input_cosign_release}" == "main" ]]; then
-          log_info "installing cosign via 'go install' from its main version"
-          GOBIN=$(go env GOPATH)/bin
-          go install github.com/sigstore/cosign/v3/cmd/cosign@main
-          ln -s "$GOBIN/cosign" "${install_dir}/cosign"
-          exit 0
-        fi
-
         shaprog() {
           case ${runner_os} in
             Linux|linux)
@@ -99,6 +80,25 @@ runs:
           esac
         }
 
+        # Substitute environment variables in install-dir input
+        install_dir=$(envsubst <<<"${input_install_dir}")
+
+        # Check for unsupported old versions (anything below v2.0.0)
+        if [[ "${input_cosign_release}" != "main" ]]; then
+          # Extract version without 'v' prefix for comparison
+          version_num="${input_cosign_release}"
+          version_num="${version_num#v}"
+
+          # Check if version is less than v2.0.0
+          if ! is_version_ge "2.0.0" "$version_num"; then
+            log_error "cosign versions below v2.0.0 are no longer supported."
+            log_error "Requested version: ${input_cosign_release}"
+            log_error "Please use cosign v2.6.0 or later."
+            log_error "See https://github.com/sigstore/cosign/releases for available versions."
+            exit 1
+          fi
+        fi
+
         ## curl -sL https://github.com/sigstore/cosign/releases/download/v3.0.6/cosign_checksums.txt |\
         ##   gawk 'match($2,/^cosign-([[:alnum:]]+)-([[:alnum:]]+)(\.[[:alnum:]]+)?$/,a){printf "bootstrap_%s_%s_sha=\"%s\"\n",a[1],a[2],$1}' |\
         ##   LANG=C sort
@@ -114,10 +114,6 @@ runs:
         bootstrap_windows_amd64_sha="9b85a88ebff2d9dd30ff4984a6f61f2cedc232dd87d81fa7f2ff3c0ed96c241c"
 
         cosign_executable_name=cosign
-
-        trap "popd >/dev/null" EXIT
-
-        pushd "${install_dir}" > /dev/null
 
         case ${runner_os} in
           Linux|linux)
@@ -188,6 +184,61 @@ runs:
             ;;
         esac
 
+        # Tool cache support: check for a previously verified binary before downloading
+        if [[ "${input_use_tool_cache}" == "true" ]]; then
+          if [[ -z "${RUNNER_TOOL_CACHE}" ]]; then
+            log_error "use-tool-cache is enabled but RUNNER_TOOL_CACHE is not set"
+            exit 1
+          fi
+
+          cache_dir="${RUNNER_TOOL_CACHE}/cosign/${input_cosign_release}/${runner_arch}"
+          cached_binary="${cache_dir}/${cosign_executable_name}"
+
+          if [[ -f "${cached_binary}" ]]; then
+            cached_sha=$(shaprog "${cached_binary}")
+            cache_valid=false
+
+            if [[ "${input_cosign_release}" == "${bootstrap_version}" ]] && [[ "${cached_sha}" == "${bootstrap_sha}" ]]; then
+              # Bootstrap version: compare against the hardcoded SHA embedded in this action
+              cache_valid=true
+            elif [[ -f "${cache_dir}/cosign.sha256" ]]; then
+              # Other versions: compare against the SHA stored during the previous verified install
+              expected_sha=$(cat "${cache_dir}/cosign.sha256")
+              if [[ "${cached_sha}" == "${expected_sha}" ]]; then
+                cache_valid=true
+              else
+                log_info "Cached cosign checksum mismatch, re-downloading"
+              fi
+            fi
+
+            if [[ "${cache_valid}" == "true" ]]; then
+              log_info "Cache hit! Using verified cosign ${input_cosign_release} from ${cache_dir}"
+              echo "cache-hit=true" >> "${GITHUB_OUTPUT}"
+              echo "COSIGN_INSTALL_PATH=${cache_dir}" >> "${GITHUB_ENV}"
+              exit 0
+            fi
+          fi
+
+          # Cache miss — install into the tool cache directory
+          install_dir="${cache_dir}"
+        fi
+
+        echo "cache-hit=false" >> "${GITHUB_OUTPUT}"
+        echo "COSIGN_INSTALL_PATH=${install_dir}" >> "${GITHUB_ENV}"
+
+        mkdir -p "${install_dir}"
+
+        if [[ "${input_cosign_release}" == "main" ]]; then
+          log_info "installing cosign via 'go install' from its main version"
+          GOBIN=$(go env GOPATH)/bin
+          go install github.com/sigstore/cosign/v3/cmd/cosign@main
+          cp "$GOBIN/cosign" "${install_dir}/cosign"
+          if [[ "${input_use_tool_cache}" == "true" ]]; then
+            shaprog "${install_dir}/cosign" > "${install_dir}/cosign.sha256"
+          fi
+          exit 0
+        fi
+
         SUDO=
         if [[ "${input_use_sudo}" == "true" ]] && command -v sudo >/dev/null; then
           SUDO=sudo
@@ -195,6 +246,11 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
+
+        trap "popd >/dev/null" EXIT
+
+        pushd "${install_dir}" > /dev/null
+
         $SUDO curl --retry "${CURL_RETRIES}" -fsSL "https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}" -o "${cosign_executable_name}"
         shaBootstrap=$(shaprog "${cosign_executable_name}")
         if [[ "$shaBootstrap" != "${expected_bootstrap_version_digest}" ]]; then
@@ -206,6 +262,9 @@ runs:
         # If the bootstrap and specified `cosign` releases are the same, we're done.
         if [[ "${input_cosign_release}" == "${bootstrap_version}" ]]; then
           log_info "bootstrap version successfully verified and matches requested version so nothing else to do"
+          if [[ "${input_use_tool_cache}" == "true" ]]; then
+            echo "${expected_bootstrap_version_digest}" > cosign.sha256
+          fi
           exit 0
         fi
 
@@ -266,19 +325,19 @@ runs:
           $SUDO rm "${cosign_executable_name}"
           $SUDO mv "cosign_${input_cosign_release}" "${cosign_executable_name}"
           $SUDO chmod +x "${cosign_executable_name}"
+
+          if [[ "${input_use_tool_cache}" == "true" ]]; then
+            shaprog "${cosign_executable_name}" > cosign.sha256
+          fi
+
           log_info "Installation complete!"
         fi
 
     - if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       shell: bash
-      env:
-        input_install_dir: ${{ inputs.install-dir }}
-      run: envsubst <<<"${input_install_dir}" >> "$GITHUB_PATH"
+      run: echo "${COSIGN_INSTALL_PATH}" >> "$GITHUB_PATH"
 
     - if: ${{ runner.os == 'Windows' }}
       shell: pwsh
-      env:
-        input_install_dir: ${{ inputs.install-dir }}
       run: |
-        $install_dir = $ExecutionContext.InvokeCommand.ExpandString("${env:input_install_dir}")
-        echo "${install_dir}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        $env:COSIGN_INSTALL_PATH | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
