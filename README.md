@@ -163,11 +163,11 @@ jobs:
 ### Optional Inputs
 The following optional inputs:
 
-| Input | Description |
-| --- | --- |
-| `cosign-release` | `cosign` version to use instead of the default. |
-| `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). |
-| `use-sudo` | set to `true` if `install-dir` location requires sudo privs. Defaults to false. |
+| Input | Description | Default |
+| --- | --- | --- |
+| `cosign-release` | `cosign` version to use instead of the default. | `v3.0.6` |
+| `install-dir` | Directory to place the `cosign` binary into. | `$HOME/.cosign` |
+| `use-sudo` | Set to `true` if `install-dir` location requires sudo privileges. | `false` |
 
 ## Security
 
