@@ -1,0 +1,24 @@
+name: Lint Shell files
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  shellcheck:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run ShellCheck
+        run: find . -type f -name "*.sh" -print0 | xargs -0 shellcheck -e SC1091
