@@ -168,6 +168,7 @@ The following optional inputs:
 | `cosign-release` | `cosign` version to use instead of the default. |
 | `install-dir` | directory to place the `cosign` binary into instead of the default (`$HOME/.cosign`). |
 | `use-sudo` | set to `true` if `install-dir` location requires sudo privs. Defaults to false. |
+| `curl-retries` | number of times to retry each download on transient network failures (e.g. GitHub CDN 504s). Defaults to 6. |
 
 ## Security
 
