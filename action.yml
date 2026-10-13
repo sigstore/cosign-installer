@@ -125,6 +125,7 @@ runs:
         bootstrap_windows_amd64_sha="9fe59be0eca1271873ce019061335eb1ac419b7059202e797828467ddabe33be"
 
         cosign_executable_name=cosign
+        bootstrap_executable_name=cosign-bootstrap
 
         trap "popd >/dev/null" EXIT
 
@@ -186,6 +187,7 @@ runs:
                 bootstrap_sha=${bootstrap_windows_amd64_sha}
                 desired_cosign_filename='cosign-windows-amd64.exe'
                 cosign_executable_name=cosign.exe
+                bootstrap_executable_name=cosign-bootstrap.exe
                 ;;
               *)
                 log_error "unsupported architecture ${runner_arch}"
@@ -206,17 +208,18 @@ runs:
 
         expected_bootstrap_version_digest=${bootstrap_sha}
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
-        $SUDO curl "${CURL_RETRY_OPTS[@]}" -fsSL "https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}" -o "${cosign_executable_name}"
-        shaBootstrap=$(shaprog "${cosign_executable_name}")
+        $SUDO curl "${CURL_RETRY_OPTS[@]}" -fsSL "https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}" -o "${bootstrap_executable_name}"
+        shaBootstrap=$(shaprog "${bootstrap_executable_name}")
         if [[ "$shaBootstrap" != "${expected_bootstrap_version_digest}" ]]; then
           log_error "Unable to validate cosign version: '${input_cosign_release}'"
           exit 1
         fi
-        $SUDO chmod +x "${cosign_executable_name}"
+        $SUDO chmod +x "${bootstrap_executable_name}"
 
         # If the bootstrap and specified `cosign` releases are the same, we're done.
         if [[ "${input_cosign_release}" == "${bootstrap_version}" ]]; then
           log_info "bootstrap version successfully verified and matches requested version so nothing else to do"
+          $SUDO mv "${bootstrap_executable_name}" "${cosign_executable_name}"
           exit 0
         fi
 
@@ -254,7 +257,7 @@ runs:
             $SUDO curl "${CURL_RETRY_OPTS[@]}" -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${keyless_signature_file}"
 
             log_info "Using bootstrap cosign to verify keyless signature of desired cosign version"
-            "./${cosign_executable_name}" verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle "${keyless_signature_file}" "cosign_${input_cosign_release}"
+            "./${bootstrap_executable_name}" verify-blob --certificate-identity=keyless@projectsigstore.iam.gserviceaccount.com --certificate-oidc-issuer=https://accounts.google.com --bundle "${keyless_signature_file}" "cosign_${input_cosign_release}"
 
             if is_version_ge "3.0.3" "$version_num"; then
               # we're trying to get something greater than or equal to v3.0.3
@@ -263,7 +266,7 @@ runs:
               $SUDO curl "${CURL_RETRY_OPTS[@]}" -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${kms_signature_file}"
 
               log_info "Using bootstrap cosign to verify signature of desired cosign version"
-              "./${cosign_executable_name}" verify-blob --key public.key --bundle "${kms_signature_file}" "cosign_${input_cosign_release}"
+              "./${bootstrap_executable_name}" verify-blob --key public.key --bundle "${kms_signature_file}" "cosign_${input_cosign_release}"
             fi
           else
             signature_file=${desired_cosign_filename}.sig
@@ -271,12 +274,13 @@ runs:
             $SUDO curl "${CURL_RETRY_OPTS[@]}" -fsSLO "https://github.com/sigstore/cosign/releases/download/${input_cosign_release}/${signature_file}"
 
             log_info "Using bootstrap cosign to verify signature of desired cosign version"
-            "./${cosign_executable_name}" verify-blob --key public.key --signature "${signature_file}" "cosign_${input_cosign_release}"
+            "./${bootstrap_executable_name}" verify-blob --key public.key --signature "${signature_file}" "cosign_${input_cosign_release}"
           fi
 
-          $SUDO rm "${cosign_executable_name}"
           $SUDO mv "cosign_${input_cosign_release}" "${cosign_executable_name}"
           $SUDO chmod +x "${cosign_executable_name}"
+          # best-effort: on Windows the just-run bootstrap binary may still be locked briefly
+          $SUDO rm -f "${bootstrap_executable_name}" || log_info "Unable to remove ${bootstrap_executable_name}, leaving it in place"
           log_info "Installation complete!"
         fi
 
