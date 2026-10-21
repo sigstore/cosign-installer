@@ -29,6 +29,7 @@ runs:
     # We verify the version against a SHA **in the published action itself**, not in the GCS bucket.
     - shell: bash
       env:
+        action_path: ${{ github.action_path }}
         input_cosign_release: ${{ inputs.cosign-release }}
         input_install_dir: ${{ inputs.install-dir }}
         input_use_sudo: ${{ inputs.use-sudo }}
@@ -110,19 +111,7 @@ runs:
           esac
         }
 
-        ## curl -sL https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign_checksums.txt |\
-        ##   gawk 'match($2,/^cosign-([[:alnum:]]+)-([[:alnum:]]+)(\.[[:alnum:]]+)?$/,a){printf "bootstrap_%s_%s_sha=\"%s\"\n",a[1],a[2],$1}' |\
-        ##   LANG=C sort
         bootstrap_version='v3.1.3'
-        bootstrap_darwin_amd64_sha="2347488e5d5b25336644024dfeca5601b190e91197a71a917bda44744aff106c"
-        bootstrap_darwin_arm64_sha="5cf948c2f4dfe59687bdd0b8523709067383e03982cc543475c8a7dc70e92a76"
-        bootstrap_linux_amd64_sha="4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
-        bootstrap_linux_arm64_sha="c5d324e091826b0d7a78eb16fef316450b4eb9aaec045611c08ba06f5e73220a"
-        bootstrap_linux_arm_sha="3275e61b43a45aa56a6242b49475d8a01874a07469c08fc32d027ba554996e4c"
-        bootstrap_linux_ppc64le_sha="15619e924681c97e0fb4f79c0eb8ef5d29665a06fe6a25078500985aed79321b"
-        bootstrap_linux_riscv64_sha="9736177c6be33e4493304fc34feb8aa29209d531b3d40142d7e2a40bbe2f542f"
-        bootstrap_linux_s390x_sha="253b571ef9e1aef72ef56d74f464ef9fe5182dc83b1ab430bbffbc4c8e43e7fd"
-        bootstrap_windows_amd64_sha="9fe59be0eca1271873ce019061335eb1ac419b7059202e797828467ddabe33be"
 
         cosign_executable_name=cosign
         bootstrap_executable_name=cosign-bootstrap
@@ -136,19 +125,16 @@ runs:
             case ${runner_arch} in
               X64|amd64)
                 bootstrap_filename='cosign-linux-amd64'
-                bootstrap_sha=${bootstrap_linux_amd64_sha}
                 desired_cosign_filename='cosign-linux-amd64'
                 ;;
 
               ARM|arm)
                 bootstrap_filename='cosign-linux-arm'
-                bootstrap_sha=${bootstrap_linux_arm_sha}
                 desired_cosign_filename='cosign-linux-arm'
                 ;;
 
               ARM64|arm64)
                 bootstrap_filename='cosign-linux-arm64'
-                bootstrap_sha=${bootstrap_linux_arm64_sha}
                 desired_cosign_filename='cosign-linux-arm64'
                 ;;
 
@@ -163,13 +149,11 @@ runs:
             case ${runner_arch} in
               X64|amd64)
                 bootstrap_filename='cosign-darwin-amd64'
-                bootstrap_sha=${bootstrap_darwin_amd64_sha}
                 desired_cosign_filename='cosign-darwin-amd64'
                 ;;
 
               ARM64|arm64)
                 bootstrap_filename='cosign-darwin-arm64'
-                bootstrap_sha=${bootstrap_darwin_arm64_sha}
                 desired_cosign_filename='cosign-darwin-arm64'
                 ;;
 
@@ -184,7 +168,6 @@ runs:
             case ${runner_arch} in
               X64|amd64)
                 bootstrap_filename='cosign-windows-amd64.exe'
-                bootstrap_sha=${bootstrap_windows_amd64_sha}
                 desired_cosign_filename='cosign-windows-amd64.exe'
                 cosign_executable_name=cosign.exe
                 bootstrap_executable_name=cosign-bootstrap.exe
@@ -206,7 +189,11 @@ runs:
           SUDO=sudo
         fi
 
-        expected_bootstrap_version_digest=${bootstrap_sha}
+        expected_bootstrap_version_digest=$(awk -v file="${bootstrap_filename}" '{ sub(/\r$/, ""); if ($2 == file) { print $1; exit } }' "${action_path}/cosign_checksums.txt")
+        if [[ -z "${expected_bootstrap_version_digest}" ]]; then
+          log_error "Unable to find expected checksum for '${bootstrap_filename}'"
+          exit 1
+        fi
         log_info "Downloading bootstrap version '${bootstrap_version}' of cosign to verify version to be installed...\n      https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}"
         $SUDO curl "${CURL_RETRY_OPTS[@]}" -fsSL "https://github.com/sigstore/cosign/releases/download/${bootstrap_version}/${bootstrap_filename}" -o "${bootstrap_executable_name}"
         shaBootstrap=$(shaprog "${bootstrap_executable_name}")
