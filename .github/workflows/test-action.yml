@@ -236,7 +236,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
         go_version:
-          - '1.26'
+          - '1.27'
     name: Try to install cosign with go ${{ matrix.go_version }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
