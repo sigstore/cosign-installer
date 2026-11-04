@@ -13,7 +13,7 @@ This action currently supports GitHub-provided Linux, macOS and Windows runners 
 Add the following entry to your Github workflow YAML file:
 
 ```yaml
-uses: sigstore/cosign-installer@v4.1.0
+uses: sigstore/cosign-installer@v4.1.3
 ```
 
 Full example:
@@ -28,7 +28,7 @@ jobs:
     name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v4.1.0
+        uses: sigstore/cosign-installer@v4.1.3
       - name: Check install!
         run: cosign version
 ```
@@ -47,9 +47,9 @@ jobs:
     name: Install Cosign
     steps:
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v4.1.0
+        uses: sigstore/cosign-installer@v4.1.3
         with:
-          cosign-release: 'v3.1.3'
+          cosign-release: 'v3.1.4'
       - name: Check install!
         run: cosign version
 ```
@@ -73,7 +73,7 @@ jobs:
           go-version: '1.24'
           check-latest: true
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v4.1.0
+        uses: sigstore/cosign-installer@v4.1.3
         with:
           cosign-release: main
       - name: Check install!
@@ -105,7 +105,7 @@ jobs:
           fetch-depth: 1
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v4.1.0
+        uses: sigstore/cosign-installer@v4.1.3
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.6.0
