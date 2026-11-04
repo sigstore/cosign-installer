@@ -10,7 +10,7 @@ inputs:
   cosign-release:
     description: 'cosign release version to be installed'
     required: false
-    default: 'v3.1.3'
+    default: 'v3.1.4'
   install-dir:
     description: 'Where to install the cosign binary'
     required: false
@@ -110,19 +110,19 @@ runs:
           esac
         }
 
-        ## curl -sL https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign_checksums.txt |\
+        ## curl -sL https://github.com/sigstore/cosign/releases/download/v3.1.4/cosign_checksums.txt |\
         ##   gawk 'match($2,/^cosign-([[:alnum:]]+)-([[:alnum:]]+)(\.[[:alnum:]]+)?$/,a){printf "bootstrap_%s_%s_sha=\"%s\"\n",a[1],a[2],$1}' |\
         ##   LANG=C sort
-        bootstrap_version='v3.1.3'
-        bootstrap_darwin_amd64_sha="2347488e5d5b25336644024dfeca5601b190e91197a71a917bda44744aff106c"
-        bootstrap_darwin_arm64_sha="5cf948c2f4dfe59687bdd0b8523709067383e03982cc543475c8a7dc70e92a76"
-        bootstrap_linux_amd64_sha="4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
-        bootstrap_linux_arm64_sha="c5d324e091826b0d7a78eb16fef316450b4eb9aaec045611c08ba06f5e73220a"
-        bootstrap_linux_arm_sha="3275e61b43a45aa56a6242b49475d8a01874a07469c08fc32d027ba554996e4c"
-        bootstrap_linux_ppc64le_sha="15619e924681c97e0fb4f79c0eb8ef5d29665a06fe6a25078500985aed79321b"
-        bootstrap_linux_riscv64_sha="9736177c6be33e4493304fc34feb8aa29209d531b3d40142d7e2a40bbe2f542f"
-        bootstrap_linux_s390x_sha="253b571ef9e1aef72ef56d74f464ef9fe5182dc83b1ab430bbffbc4c8e43e7fd"
-        bootstrap_windows_amd64_sha="9fe59be0eca1271873ce019061335eb1ac419b7059202e797828467ddabe33be"
+        bootstrap_version='v3.1.4'
+        bootstrap_darwin_amd64_sha="9d1e4abe2b6be279ed0d2ff706fde1ccd738747c834e3e6d44039c238867334f"
+        bootstrap_darwin_arm64_sha="9f9b8cd557cf2e5b3df3373a00baa005a86b02391e3e06dd0ce37b3a1533d3a4"
+        bootstrap_linux_amd64_sha="424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa"
+        bootstrap_linux_arm64_sha="ade83b7aac62e131cacfe96d958948b2150cc9efec46a570a2649b8e27dedad2"
+        bootstrap_linux_arm_sha="09e77a313910cf5c4774508d85d017d9c60983f41bf657f83ecbd3892f7952cb"
+        bootstrap_linux_ppc64le_sha="0887fca23319ea017cc827e6a845ba83722a36bf9e932f35c747ca83c14cec49"
+        bootstrap_linux_riscv64_sha="24f3865df0fd9b055827b888d56e13583112ac7d4c87b45967af1f0febf35455"
+        bootstrap_linux_s390x_sha="777978d576af893a3daf1fcf3b0e9178cebcbc083a669f6125b6c97b8e1fe433"
+        bootstrap_windows_amd64_sha="cbe953787074611f1334cbf37dc1cf953995bb8c45398eb4fc7bb781d29c1f2a"
 
         cosign_executable_name=cosign
         bootstrap_executable_name=cosign-bootstrap
