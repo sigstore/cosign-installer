@@ -1,0 +1,172 @@
+name: check-cosign-release
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check_latest_cosign:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    name: Check if released cosign-installer uses latest cosign release
+    steps:
+      - name: Compare released default cosign version with latest cosign release
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          retries: 3
+          script: |
+            function parseSemver(version) {
+              const match = version.trim().replace(/^v/, '').match(/^(\d+)\.(\d+)\.(\d+)$/);
+              if (!match) {
+                throw new Error(`Invalid semver version: '${version}'`);
+              }
+              return {
+                major: Number(match[1]),
+                minor: Number(match[2]),
+                patch: Number(match[3]),
+              };
+            }
+
+            function isVersionSmaller(a, b) {
+              const va = parseSemver(a);
+              const vb = parseSemver(b);
+              if (va.major !== vb.major) return va.major < vb.major;
+              if (va.minor !== vb.minor) return va.minor < vb.minor;
+              return va.patch < vb.patch;
+            }
+
+            // Get latest release of sigstore/cosign
+            const { data: latestCosignRelease } = await github.rest.repos.getLatestRelease({
+              owner: 'sigstore',
+              repo: 'cosign',
+            });
+            const latestCosignVersion = latestCosignRelease.tag_name;
+            core.info(`Latest cosign release: ${latestCosignVersion}`);
+
+            // Get latest semver tag of cosign-installer
+            const tags = await github.paginate(github.rest.repos.listTags, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
+            const semverTags = tags
+              .map(t => t.name)
+              .filter(name => /^v\d+\.\d+\.\d+$/.test(name))
+              .sort((a, b) => (isVersionSmaller(a, b) ? 1 : isVersionSmaller(b, a) ? -1 : 0));
+            if (semverTags.length === 0) {
+              throw new Error('No vX.Y.Z tags found in repository');
+            }
+            const installerTag = semverTags[0];
+            core.info(`Latest cosign-installer tag: ${installerTag}`);
+
+            // Fetch action.yml from latest cosign-installer tag
+            const { data: actionFile } = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: 'action.yml',
+              ref: installerTag,
+            });
+            const actionYml = Buffer.from(actionFile.content, 'base64').toString('utf8');
+
+            const defaultMatch = actionYml.match(
+              /cosign-release:\s*(?:[^\n]*\n)+?\s*default:\s*['"]?(v\d+\.\d+\.\d+)['"]?/
+            );
+            if (!defaultMatch) {
+              throw new Error(`Could not find default cosign-release in action.yml at ${installerTag}`);
+            }
+            const defaultCosignVersion = defaultMatch[1];
+            core.info(`Default cosign version in ${installerTag}: ${defaultCosignVersion}`);
+
+            // Compare versions
+            if (!isVersionSmaller(defaultCosignVersion, latestCosignVersion)) {
+              core.info(
+                `Default cosign version (${defaultCosignVersion}) is up to date with latest cosign release (${latestCosignVersion}).`
+              );
+              return;
+            }
+
+            core.info(
+              `Default cosign version (${defaultCosignVersion}) is older than latest cosign release (${latestCosignVersion}).`
+            );
+
+            // Check if an open issue already exists for this cosign release
+            const issueTitle = `New release with cosign ${latestCosignVersion}`;
+            const { data: searchResults } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open in:title "${issueTitle}"`,
+            });
+
+            const existingIssue = searchResults.items.find(issue => issue.title === issueTitle);
+            if (existingIssue) {
+              core.info(`Open issue already exists: #${existingIssue.number} (${existingIssue.html_url})`);
+              return;
+            }
+
+            // Fetch cosign_checksums.txt and format ready-to-paste bootstrap block
+            const checksumsUrl = `https://github.com/sigstore/cosign/releases/download/${latestCosignVersion}/cosign_checksums.txt`;
+            const checksumsResponse = await fetch(checksumsUrl);
+            if (!checksumsResponse.ok) {
+              throw new Error(`Failed to fetch ${checksumsUrl}: ${checksumsResponse.status} ${checksumsResponse.statusText}`);
+            }
+            const checksumsText = await checksumsResponse.text();
+
+            const shaLines = [];
+            for (const line of checksumsText.split('\n')) {
+              const parts = line.trim().split(/\s+/);
+              if (parts.length < 2) continue;
+              const [sha, filename] = parts;
+              const match = filename.match(/^cosign-([a-zA-Z0-9]+)-([a-zA-Z0-9]+)(\.[a-zA-Z0-9]+)?$/);
+              if (match) {
+                shaLines.push(`        bootstrap_${match[1]}_${match[2]}_sha="${sha}"`);
+              }
+            }
+            shaLines.sort();
+
+            if (shaLines.length === 0) {
+              throw new Error(`No matching binary checksums found in ${checksumsUrl}`);
+            }
+
+            const bootstrapSnippet = [
+              `        ## curl -sL ${checksumsUrl} |\\`,
+              `        ##   gawk 'match($2,/^cosign-([[:alnum:]]+)-([[:alnum:]]+)(\\.[[:alnum:]]+)?$/,a){printf "bootstrap_%s_%s_sha=\\"%s\\"\\n",a[1],a[2],$1}' |\\`,
+              `        ##   LANG=C sort`,
+              `        bootstrap_version='${latestCosignVersion}'`,
+              ...shaLines,
+            ].join('\n');
+
+            // Create an issue with ready-to-paste snippets
+            const installerTagUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/tree/${installerTag}`;
+            const issueBody = [
+              `The latest released \`cosign-installer\` ([${installerTag}](${installerTagUrl})) defaults to cosign \`${defaultCosignVersion}\`, while a newer cosign release ([${latestCosignVersion}](${latestCosignRelease.html_url})) is available.`,
+              '',
+              '### Changes needed',
+              '',
+              '1. Update `inputs.cosign-release.default` in `action.yml`:',
+              '```yaml',
+              '  cosign-release:',
+              "    description: 'cosign release version to be installed'",
+              '    required: false',
+              `    default: '${latestCosignVersion}'`,
+              '```',
+              '',
+              '2. Update `bootstrap_version` and checksums in `action.yml`:',
+              '```bash',
+              bootstrapSnippet,
+              '```',
+              '',
+              `3. Update the example \`cosign-release: '${latestCosignVersion}'\` in \`README.md\`.`,
+              '4. Create a new `cosign-installer` release once merged.',
+            ].join('\n');
+
+            const { data: createdIssue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+            });
+
+            core.info(`Created issue #${createdIssue.number}: ${createdIssue.html_url}`);
